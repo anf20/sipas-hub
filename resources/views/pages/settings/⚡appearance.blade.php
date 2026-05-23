@@ -1,0 +1,18 @@
+<?php
+
+use Livewire\Component;
+use Livewire\Attributes\Title;
+
+new #[Title('Appearance settings')] class extends Component {
+    //
+}; ?>
+
+<section class="w-full">
+    @include('partials.settings-heading')
+
+    <flux:heading class="sr-only">{{ __('Appearance settings') }}</flux:heading>
+
+    <x-pages::settings.layout :heading="__('Appearance')" :subheading="__('Update the appearance settings for your account')">
+        <flux:text>{{ __('Aplikasi ini telah dikonfigurasi untuk menggunakan Mode Terang (Light Mode) secara permanen.') }}</flux:text>
+    </x-pages::settings.layout>
+</section>

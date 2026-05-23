@@ -1,0 +1,112 @@
+@import 'tailwindcss';
+@import '../../vendor/livewire/flux/dist/flux.css';
+
+@source '../views';
+@source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
+@source '../../vendor/livewire/flux-pro/stubs/**/*.blade.php';
+@source '../../vendor/livewire/flux/stubs/**/*.blade.php';
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme {
+    --font-sans: 'Inter', 'Instrument Sans', ui-sans-serif, system-ui, sans-serif;
+    --font-display: 'Lexend', ui-sans-serif, system-ui, sans-serif;
+
+    --color-primary: #031636;
+    --color-on-primary: #ffffff;
+    --color-primary-container: #1a2b4c;
+    --color-on-primary-container: #8293ba;
+
+    --color-secondary: #006c49;
+    --color-on-secondary: #ffffff;
+    --color-secondary-container: #6cf8bb;
+    --color-on-secondary-container: #00714d;
+
+    --color-background: #f8f9ff;
+    --color-on-background: #0b1c30;
+
+    --color-surface: #f8f9ff;
+    --color-on-surface: #0b1c30;
+    --color-surface-container: #e5eeff;
+    --color-surface-container-low: #eff4ff;
+    --color-surface-container-high: #dce9ff;
+    --color-surface-container-highest: #d3e4fe;
+    --color-surface-container-lowest: #ffffff;
+    --color-surface-variant: #d3e4fe;
+    --color-on-surface-variant: #44474e;
+
+    --color-outline: #75777f;
+    --color-outline-variant: #c5c6cf;
+
+    --color-error: #ba1a1a;
+    --color-on-error: #ffffff;
+    --color-error-container: #ffdad6;
+    --color-on-error-container: #93000a;
+
+    --font-display-lg: "Lexend";
+    --font-headline-md: "Lexend";
+    --font-body-md: "Inter";
+    --font-title-sm: "Lexend";
+    --font-caption: "Inter";
+    --font-label-bold: "Inter";
+    --font-body-lg: "Inter";
+
+    --color-zinc-50: #fafafa;
+    --color-zinc-100: #f5f5f5;
+    --color-zinc-200: #e5e5e5;
+    --color-zinc-300: #d4d4d4;
+    --color-zinc-400: #a3a3a3;
+    --color-zinc-500: #737373;
+    --color-zinc-600: #525252;
+    --color-zinc-700: #404040;
+    --color-zinc-800: #262626;
+    --color-zinc-900: #171717;
+    --color-zinc-950: #0a0a0a;
+
+    --color-accent: var(--color-neutral-800);
+    --color-accent-content: var(--color-neutral-800);
+    --color-accent-foreground: var(--color-white);
+
+    --spacing-tiny: 0.25rem;
+    --spacing-small: 0.5rem;
+    --spacing-normal: 1rem;
+    --spacing-large: 1.5rem;
+    --spacing-huge: 2rem;
+}
+
+@layer theme {
+    .dark {
+        --color-accent: var(--color-white);
+        --color-accent-content: var(--color-white);
+        --color-accent-foreground: var(--color-neutral-800);
+    }
+}
+
+@layer base {
+
+    *,
+    ::after,
+    ::before,
+    ::backdrop,
+    ::file-selector-button {
+        border-color: var(--color-gray-200, currentColor);
+    }
+}
+
+[data-flux-field]:not(ui-radio, ui-checkbox) {
+    @apply grid gap-2;
+}
+
+[data-flux-label] {
+    @apply  !mb-0 !leading-tight;
+}
+
+input:focus[data-flux-control],
+textarea:focus[data-flux-control],
+select:focus[data-flux-control] {
+    @apply outline-hidden ring-2 ring-accent ring-offset-2 ring-offset-accent-foreground;
+}
+
+/* \[:where(&)\]:size-4 {
+    @apply size-4;
+} */

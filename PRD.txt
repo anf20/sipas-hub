@@ -1,0 +1,274 @@
+﻿PRODUCT REQUIREMENTS DOCUMENT
+Sistem Informasi Pembayaran SPP & Kegiatan Sekolah
+SIPAS-Hub — Platform Pembayaran Sekolah Berbasis Web
+Nama Proyek
+	SIPAS-Hub — Sistem Pembayaran SPP & Kegiatan Sekolah
+	Versi Dokumen
+	1.0
+	Tanggal
+	Mei 2025
+	Tech Stack
+	Laravel 13 + Livewire 4 + SQLite/MySQL 8 + Tailwind CSS 4
+	Status
+	Draft — Menunggu Persetujuan Stakeholder
+	Prioritas Dev
+	1) Data Siswa & Kelas 2) Tagihan 3) Payment Gateway
+	1. Pendahuluan
+1.1 Latar Belakang
+Pengelolaan keuangan sekolah, khususnya pembayaran SPP dan biaya kegiatan siswa, masih banyak dilakukan secara manual. Proses ini rentan terhadap kesalahan pencatatan, keterlambatan pelaporan, dan kurangnya transparansi bagi orang tua. SIPAS-Hub hadir sebagai solusi digital berbasis web yang memungkinkan administrasi sekolah mengelola tagihan secara otomatis, sementara orang tua dapat memantau dan melakukan pembayaran secara online kapan saja.
+1.2 Tujuan Proyek
+* Otomatisasi generate tagihan SPP bulanan untuk seluruh siswa aktif
+* Transparansi tagihan: orang tua dapat melihat semua tagihan dan riwayat bayar
+* Efisiensi administrasi: mengurangi pekerjaan manual staff keuangan
+* Fondasi untuk integrasi payment gateway di fase berikutnya
+1.3 Ruang Lingkup
+* Manajemen data master: siswa, kelas, tahun ajaran, jenis tagihan
+* Generate & kelola tagihan SPP bulanan dan tagihan kegiatan
+* Portal orang tua untuk lihat tagihan dan riwayat bayar
+* Pencatatan pembayaran manual oleh admin
+* Laporan & dashboard keuangan
+* Integrasi payment gateway (Fase 3 — dikerjakan terakhir)
+2. Stakeholder & Role Pengguna
+Role
+	Deskripsi
+	Akses Utama
+ 
+	Super Admin
+	Tim IT / manajemen sekolah tertinggi
+	Semua modul + konfigurasi sistem
+	Admin Keuangan
+	Staff TU / bendahara sekolah
+	Generate tagihan, catat pembayaran, laporan
+	Admin Akademik
+	Staff akademik / wali kelas
+	Data siswa, kelas, kegiatan
+	Orang Tua / Wali
+	Wali murid siswa aktif
+	Lihat tagihan anak, riwayat bayar, bayar online (fase 3)
+	3. Arsitektur & Tech Stack
+Layer
+	Teknologi
+	Keterangan
+ 
+	Backend
+	Laravel 13 (PHP 8.4+)
+	Framework utama, MVC + Service Layer
+	Reactive UI
+	Livewire 4 + Alpine.js
+	Full-stack reactive tanpa SPA
+	Styling
+	Tailwind CSS 4
+	Utility-first CSS, komponen reusable
+	Database
+	SQLite / MySQL 8.0
+	Relational DB
+	Auth
+	Laravel Fortify + Spatie Permission
+	Multi-role authentication & RBAC
+	Queue / Jobs
+	Laravel Queue + Redis
+	Generate tagihan massal background
+	Scheduler
+	Laravel Task Scheduling
+	Auto-generate SPP tiap bulan
+	Storage
+	Laravel Storage + S3/Local
+	Bukti bayar, foto siswa, dokumen
+	Payment Gateway
+	Midtrans / Xendit
+	FASE 3 — dikerjakan terakhir
+	Export
+	Laravel Excel + DomPDF
+	Export Excel & PDF laporan
+	4. Desain Database
+4.1 Tabel Utama
+Tabel
+	Kolom Penting
+	Keterangan
+ 
+	users
+	id, name, email, password, email_verified_at, timestamps
+	Semua pengguna (admin & ortu)
+	students
+	id, nis, name, school_class_id, parent_user_id, gender, birth_date, address, photo, status, entry_year, current_grade, deleted_at, timestamps
+	Data lengkap siswa
+	school_classes
+	id, name, grade, major, homeroom_id, academic_year_id, capacity, timestamps
+	Kelas & rombel per tahun ajaran
+	academic_years
+	id, name, start_date, end_date, is_active, timestamps
+	Tahun ajaran sekolah
+	fee_types
+	id, name, category, default_amount, is_recurring, recurrence, applicable_grades, is_active, timestamps
+	Master jenis tagihan
+	invoices
+	id, student_id, fee_type_id, amount, due_date, period_month, period_year, status, notes, generated_by, snap_token, timestamps
+	Tagihan per siswa
+	payments
+	id, invoice_id, amount, method, paid_at, receipt_number, recorded_by, timestamps
+	Transaksi pembayaran
+	activities
+	id, name, date, fee_amount, description, status, created_by
+	Kegiatan sekolah berbayar
+	activity_participants
+	id, activity_id, student_id, invoice_id, registered_at
+	Peserta kegiatan
+	notifications
+	id, user_id, title, message, type, read_at, data
+	Notifikasi in-app
+	audit_logs
+	id, user_id, action, model_type, model_id, old_values, new_values, ip, created_at
+	Log audit keuangan
+	4.2 Relasi Utama
+* students → classes (many-to-one): Satu siswa satu kelas aktif
+* students → users (many-to-one via parent_user_id): Satu ortu bisa punya banyak anak
+* invoices → students (many-to-one): Satu siswa banyak tagihan
+* payments → invoices (one-to-one): Satu tagihan satu pembayaran
+* activities → students (many-to-many via activity_participants)
+* invoices.generated_by → users: Tracking siapa yang generate tagihan
+5. Spesifikasi Fitur
+5.1 Autentikasi & Manajemen Pengguna
+* Login multi-role dengan email + password
+* Role-Based Access Control: admin tidak bisa akses portal ortu, dan sebaliknya
+* Reset password via email
+* Admin dapat buat, edit, dan nonaktifkan akun user
+* Saat akun ortu dibuat, sistem kirim email berisi kredensial login otomatis
+5.2 ★ Modul Data Siswa [PRIORITAS 1]
+Modul ini adalah fondasi seluruh sistem dan harus selesai lebih dulu.
+CRUD Data Siswa
+* Form registrasi siswa dengan validasi lengkap
+* NIS (auto-generate jika dikosongkan, format YYXXXX)
+* Data pribadi: nama, tempat/tanggal lahir, jenis kelamin, agama, alamat
+* Data keluarga: nama ayah/ibu/wali, pekerjaan, nomor HP wali
+* Data akademik: Kelas (wajib), tahun masuk, status (aktif/lulus/keluar/pindah)
+* Alur Pendaftaran: Admin wajib menginput Kelas di awal pendaftaran (Strict Consistency)
+* Upload foto siswa (resize otomatis)
+* Edit data siswa dengan validasi
+* Soft delete siswa (nonaktif), bukan hapus permanen
+* Kenaikan kelas: wizard pindah siswa ke kelas baru (akhir tahun ajaran)
+* Import siswa massal via Excel/CSV dengan template yang bisa diunduh
+* Export daftar siswa ke Excel & PDF
+* Filter & pencarian: by NIS, nama, kelas, status
+Manajemen Kelas
+* CRUD kelas per tahun ajaran dengan kapasitas
+* Assign wali kelas ke kelas
+* Pindah siswa antar kelas
+* Daftar siswa per kelas (roster) dengan foto
+Manajemen Akun Orang Tua
+* Admin create akun ortu + link ke satu atau lebih data siswa
+* Satu akun ortu dapat di-link ke beberapa siswa (kakak-adik)
+5.3 ★ Modul Tagihan [PRIORITAS 1]
+Modul inti kedua, harus selesai setelah modul siswa siap.
+Master Jenis Tagihan
+* CRUD jenis tagihan: nama, kategori (SPP/kegiatan/seragam/lain), nominal default
+* Konfigurasi recurring: bulanan / tahunan / sekali
+* Setting berlaku untuk jenjang/kelas tertentu atau semua
+* Histori perubahan nominal
+Generate Tagihan SPP Bulanan
+* Admin pilih: bulan, tahun, jenis tagihan SPP
+* Filter scope: semua siswa aktif / per jenjang / per kelas tertentu
+* Preview daftar siswa + nominal sebelum dieksekusi (konfirmasi wajib)
+* Preview menampilkan status: 'Akan dibuat' vs 'Sudah ada (skip)'
+* Eksekusi via Laravel Job di background queue + progress indicator
+* Sistem cek duplikasi: tidak buat ulang jika tagihan bulan tersebut sudah ada
+* Laporan hasil: jumlah berhasil, jumlah skip (duplikat), jumlah gagal
+* Log: generate dicatat siapa, kapan, berapa siswa, bulan berapa
+Generate Tagihan Kegiatan
+* Admin buat event kegiatan dengan nominal biaya
+* Pilih peserta: semua siswa aktif / per kelas / pilih manual
+* Generate tagihan ke peserta terpilih
+* Tracking status konfirmasi keikutsertaan per siswa
+Kelola Tagihan Individual
+* Tambah tagihan manual per siswa (di luar SPP & kegiatan)
+* Edit nominal tagihan dengan input justifikasi
+* Batalkan tagihan (void) dengan log alasan
+* Perpanjang tanggal jatuh tempo
+5.4 Pembayaran Manual (Admin)
+* Admin cari siswa lalu pilih tagihan yang akan dibayar
+* Input: nominal bayar, metode (tunai/transfer/dll), tanggal, bukti (foto/scan)
+* Sistem validasi nominal dan update status invoice otomatis
+* Generate nomor kwitansi otomatis (format: SCH-YYYYMM-XXXXXX)
+* Cetak / download kwitansi PDF
+* Notifikasi ke ortu saat pembayaran direkam
+5.5 Portal Orang Tua
+* Dashboard: ringkasan tagihan, informasi anak, visualisasi metrik dengan UI mobile-first.
+* Daftar tagihan: filter by anak, by status, desain badge dinamis.
+* Detail tagihan: rincian biaya, periode, instruksi bayar, tombol "Bayar Sekarang" terintegrasi Midtrans Snap JS.
+* Riwayat pembayaran: semua transaksi dengan fitur download kwitansi resmi (PDF).
+* Pengaturan Akun: halaman khusus portal orang tua untuk ubah profil dan keamanan.
+* Profil anak: data akademik, kelas, wali kelas, foto.
+5.6 Dashboard & Laporan Admin
+* Summary cards: Pemasukan Bulan Ini, Total Tunggakan, Rate Penagihan (UI unifikasi berbasis metrik warna).
+* Visualisasi Keuangan: Progress bar pelunasan SPP & Tagihan Lainnya, dilengkapi data agregat jumlah siswa yang terbebani vs lunas.
+* Tabel tagihan jatuh tempo & riwayat aktivitas keuangan.
+* Laporan rekap: Export transaksi ke format PDF menggunakan DomPDF.
+5.7 Integritas Data & Keamanan Sistem (Nilai Tambah Implementasi)
+* Automated Audit Trail: Menggunakan Eloquent Traits untuk merekam setiap aksi (Create/Update/Delete) pada transaksi, menyimpan old_values & new_values beserta IP Address pengguna.
+* Transaction Locking Logic: Penguncian atribut krusial (Nominal & Kategori) secara otomatis pada model Tagihan (Invoice) jika telah memiliki minimal satu transaksi pelunasan, mencegah anomali akuntansi.
+* Robust Webhook Security (Midtrans Callback):
+- Anti-Timing Attack: Menggunakan `hash_equals()` untuk komparasi signature key.
+- Pessimistic Locking: Menggunakan `lockForUpdate()` dalam Database Transaction untuk mencegah Race Condition saat menerima concurrent callbacks.
+- Parameter Tampering Protection: Validasi strict antara `gross_amount` dari gateway dengan `amount` di database lokal.6. User Stories
+Admin Keuangan
+ID
+	User Story
+	Prioritas
+ 
+	US-001
+	Sebagai admin, saya dapat generate tagihan SPP untuk semua siswa aktif dengan satu klik.
+	Tinggi
+	US-002
+	Sebagai admin, saya melihat preview tagihan dan konfirmasi sebelum dieksekusi.
+	Tinggi
+	US-005
+	Sebagai admin, saya dapat mencatat pembayaran tunai dan mencetak kwitansi.
+	Tinggi
+	Orang Tua / Wali
+ID
+	User Story
+	Prioritas
+ 
+	US-010
+	Sebagai orang tua, saya dapat melihat semua tagihan anak yang belum lunas.
+	Tinggi
+	US-012
+	Sebagai orang tua, saya dapat mengunduh kwitansi pembayaran.
+	Tinggi
+	7. Alur Kerja Utama
+7.1 Generate Tagihan SPP Bulanan
+1. Admin buka menu Tagihan > Generate SPP Bulanan
+2. Admin pilih bulan, tahun, dan jenis tagihan SPP serta scope siswa
+3. Sistem tampilkan preview data siswa dan nominal
+4. Admin konfirmasi, sistem jalankan job di background queue
+5. Sistem kirim notifikasi ke akun ortu
+8. Prioritas & Roadmap Pengembangan
+Fase
+	Fitur
+	Must Have
+ 
+	Fase 1
+	Setup project, CRUD Siswa, Kelas, Tagihan SPP, Pembayaran Manual, Portal Ortu
+	Ya
+	Fase 2
+	Export Reports, Scheduler, Notifikasi WA/Email, Audit Log
+	Penting
+	Fase 3
+	Payment Gateway (VA, QRIS, e-wallet), Webhook handler
+	Nanti
+	9. Payment Gateway — Spesifikasi Fase 3
+Dikerjakan TERAKHIR setelah sistem inti stabil.
+Provider
+	Metode
+	Biaya
+ 
+	Midtrans
+	VA, QRIS, GoPay, OVO, Kartu
+	~0.7%-2%
+	Xendit
+	VA, QRIS, e-wallet, retail
+	~1%-2.9%
+	10. Persyaratan Non-Fungsional
+* Performa: Halaman load < 2 detik, 500 tagihan < 30 detik (queue)
+* Keamanan: Enkripsi bcrypt, proteksi CSRF/XSS, role isolation
+* Skalabilitas: Up to 5.000 siswa aktif
+SIPAS-Hub v1.0 | Mei 2025
