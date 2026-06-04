@@ -13,6 +13,10 @@ class InvoiceDetail extends Component
 {
     public Invoice $invoice;
 
+    public string $paymentMethod = 'bca_va';
+
+    public bool $showConfirmationModal = false;
+
     public function mount(Invoice $invoice)
     {
         // Ensure the invoice belongs to a student of the current parent
@@ -26,7 +30,7 @@ class InvoiceDetail extends Component
         $this->invoice = $invoice->load(['student', 'feeType', 'payments']);
     }
 
-    public function pay()
+    public function initiatePayment()
     {
         if ($this->invoice->status === 'paid') {
             \Flux::toast(__('Tagihan ini sudah lunas.'), variant: 'warning');
@@ -34,10 +38,20 @@ class InvoiceDetail extends Component
             return;
         }
 
+        $this->showConfirmationModal = true;
+    }
+
+    public function pay()
+    {
+        if ($this->invoice->status === 'paid') {
+            return;
+        }
+
         try {
             $midtransService = app(MidtransService::class);
-            $snapToken = $midtransService->getSnapToken($this->invoice);
+            $snapToken = $midtransService->getSnapToken($this->invoice, $this->paymentMethod);
 
+            $this->showConfirmationModal = false;
             $this->dispatch('show-snap-popup', snapToken: $snapToken);
         } catch (\Exception $e) {
             \Log::error('Midtrans Snap Error: '.$e->getMessage());
@@ -47,6 +61,13 @@ class InvoiceDetail extends Component
 
     public function render()
     {
-        return view('livewire.pages.parent.invoice-detail')->title(__('Detail Tagihan'));
+        $midtransService = app(MidtransService::class);
+        $serviceFee = $midtransService->calculateFee((float) $this->invoice->amount, $this->paymentMethod);
+        $totalToPay = $this->invoice->amount + $serviceFee;
+
+        return view('livewire.pages.parent.invoice-detail', [
+            'serviceFee' => $serviceFee,
+            'totalToPay' => $totalToPay,
+        ])->title(__('Detail Tagihan'));
     }
 }

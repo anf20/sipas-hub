@@ -6,7 +6,6 @@
                 <h2 class="font-headline-md text-2xl font-semibold text-primary">{{ __('Tagihan Aktif') }}</h2>
                 <p class="font-body-md text-sm text-on-surface-variant">{{ __('Tinjau dan selesaikan biaya pendidikan putra-putri Anda.') }}</p>
             </div>
-            
         </div>
     </section>
 
@@ -30,12 +29,10 @@
         >
             {{ __('Sudah Bayar') }}
         </button>
-        
     </nav>
 
     <!-- Grouped Invoices -->
     <div class="flex flex-col gap-large">
-        
         @forelse($groupedInvoices as $studentName => $studentInvoices)
             <div class="flex flex-col gap-normal">
                 <div class="flex items-center gap-2 px-1">
@@ -108,16 +105,20 @@
                 {{ __('Tidak ada tagihan yang ditemukan.') }}
             </div>
         @endforelse
-        @if($totalUnpaidBalance > 0 && ($filter === 'all' || $filter === 'unpaid'))
+
+        <!-- Move "Bayar Sekaligus" Button here -->
+        @if($unpaidCount > 1 && ($filter === 'all' || $filter === 'unpaid'))
+            <div class="flex justify-center mt-4">
                 <flux:button 
-                    size="sm" 
                     variant="{{ $isSelectMode ? 'primary' : 'outline' }}" 
                     wire:click="toggleSelectMode"
-                    class="shrink-0"
+                    class="w-full max-w-xs shadow-sm !rounded-xl h-[48px]"
+                    icon="{{ $isSelectMode ? 'x-mark' : 'check-badge' }}"
                 >
-                    {{ $isSelectMode ? __('Batal') : __('Bayar Sekaligus') }}
+                    {{ $isSelectMode ? __('Batal Pilih') : __('Pilih Tagihan (Bayar Massal)') }}
                 </flux:button>
-            @endif
+            </div>
+        @endif
     </div>
 
     <!-- Quick Summary Section -->
@@ -127,7 +128,7 @@
                 <div>
                     @if($isSelectMode)
                         <p class="font-label-bold text-xs font-semibold opacity-80 uppercase tracking-wider text-on-primary-container">{{ __('Total Terpilih (:count)', ['count' => count($selectedInvoices)]) }}</p>
-                        <h4 class="font-display-lg text-2xl font-semibold text-white mt-1">Rp {{ number_format($selectedTotal, 0, ',', '.') }}</h4>
+                        <h4 class="font-display-lg text-2xl font-semibold text-white mt-1">Rp {{ number_format($invoicesTotal, 0, ',', '.') }}</h4>
                     @else
                         <p class="font-label-bold text-xs font-semibold opacity-80 uppercase tracking-wider text-on-primary-container">{{ __('Total Belum Dibayar') }}</p>
                         <h4 class="font-display-lg text-2xl font-semibold text-white mt-1">Rp {{ number_format($totalUnpaidBalance, 0, ',', '.') }}</h4>
@@ -158,32 +159,46 @@
         <div class="space-y-6">
             <div>
                 <flux:heading size="lg">{{ __('Ringkasan Pembayaran') }}</flux:heading>
-                <flux:subheading>{{ __('Tinjau kembali rincian tagihan sebelum melanjutkan pembayaran.') }}</flux:subheading>
+                <flux:subheading>{{ __('Pilih metode pembayaran dan tinjau rincian biaya.') }}</flux:subheading>
             </div>
 
-            <div class="space-y-4 max-h-[40vh] overflow-y-auto pr-2">
+            <div class="space-y-3">
+                <flux:label>{{ __('Metode Pembayaran') }}</flux:label>
+                <flux:radio.group wire:model.live="paymentMethod" variant="cards" class="flex flex-col gap-2">
+                    <flux:radio value="bca_va" label="BCA Virtual Account" description="Biaya Flat Rp 4.500" />
+                    <flux:radio value="bri_va" label="BRI Virtual Account" description="Biaya Flat Rp 4.500" />
+                    <flux:radio value="echannel" label="Mandiri Bill Payment" description="Biaya Flat Rp 4.500" />
+                    <flux:radio value="qris" label="QRIS (Gopay/Dana/OVO)" description="Biaya Layanan 0.7%" />
+                    <flux:radio value="dana" label="Dana (Direct)" description="Biaya Layanan 1.5%" />
+                </flux:radio.group>
+            </div>
+
+            <div class="space-y-4 max-h-[30vh] overflow-y-auto pr-2">
+                <div class="text-xs font-bold text-zinc-400 uppercase tracking-widest">{{ __('Rincian Tagihan') }}</div>
                 @foreach($selectedInvoicesData as $item)
-                    <div class="flex justify-between items-start border-b border-zinc-100 dark:border-zinc-800 pb-3">
+                    <div class="flex justify-between items-start border-b border-zinc-100 dark:border-zinc-800 pb-2">
                         <div class="flex flex-col gap-0.5">
                             <span class="font-semibold text-sm">{{ $item->feeType->name }}</span>
                             <span class="text-xs text-zinc-500">{{ $item->student->name }}</span>
-                            <span class="text-[10px] text-zinc-400 italic">
-                                {{ $item->period_month ? Carbon\Carbon::create()->month($item->period_month)->translatedFormat('F') : '' }} {{ $item->period_year }}
-                            </span>
                         </div>
                         <span class="font-medium text-sm">Rp {{ number_format($item->amount, 0, ',', '.') }}</span>
                     </div>
                 @endforeach
+                
+                <div class="flex justify-between items-center pt-2">
+                    <span class="text-sm text-zinc-500">{{ __('Biaya Layanan') }}</span>
+                    <span class="font-medium text-sm">Rp {{ number_format($serviceFee, 0, ',', '.') }}</span>
+                </div>
             </div>
 
             <div class="bg-zinc-50 dark:bg-zinc-900 p-4 rounded-xl flex justify-between items-center border border-zinc-200 dark:border-zinc-700">
                 <span class="font-bold text-zinc-600 dark:text-zinc-400">{{ __('Total Bayar') }}</span>
-                <span class="font-display-lg text-xl font-bold text-primary">Rp {{ number_format($selectedTotal, 0, ',', '.') }}</span>
+                <span class="font-display-lg text-xl font-bold text-primary">Rp {{ number_format($totalToPay, 0, ',', '.') }}</span>
             </div>
 
             <div class="flex gap-3">
                 <flux:button class="flex-1" variant="ghost" wire:click="$set('showConfirmationModal', false)">{{ __('Batal') }}</flux:button>
-                <flux:button class="flex-1" variant="primary" wire:click="paySelected">{{ __('Konfirmasi & Bayar') }}</flux:button>
+                <flux:button class="flex-1" variant="primary" wire:click="paySelected">{{ __('Bayar Sekarang') }}</flux:button>
             </div>
         </div>
     </flux:modal>

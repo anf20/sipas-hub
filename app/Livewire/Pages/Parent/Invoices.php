@@ -19,6 +19,8 @@ class Invoices extends Component
 
     public array $selectedInvoices = [];
 
+    public string $paymentMethod = 'bca_va';
+
     public function setFilter($filter)
     {
         $this->filter = $filter;
@@ -57,7 +59,7 @@ class Invoices extends Component
 
         try {
             $midtransService = app(MidtransService::class);
-            $snapToken = $midtransService->getBulkSnapToken($invoices, Auth::user());
+            $snapToken = $midtransService->getBulkSnapToken($invoices, Auth::user(), $this->paymentMethod);
 
             $this->showConfirmationModal = false;
             $this->dispatch('show-snap-popup', snapToken: $snapToken);
@@ -92,7 +94,15 @@ class Invoices extends Component
             ->whereIn('id', $this->selectedInvoices)
             ->get();
 
-        $selectedTotal = $selectedInvoicesData->sum('amount');
+        $invoicesTotal = $selectedInvoicesData->sum('amount');
+
+        $midtransService = app(MidtransService::class);
+        $serviceFee = $midtransService->calculateFee((float) $invoicesTotal, $this->paymentMethod);
+        $totalToPay = $invoicesTotal + $serviceFee;
+
+        $unpaidCount = Invoice::whereIn('student_id', $studentIds)
+            ->where('status', 'unpaid')
+            ->count();
 
         // Group invoices by student name
         $groupedInvoices = $invoices->groupBy(fn ($invoice) => $invoice->student->name);
@@ -100,8 +110,11 @@ class Invoices extends Component
         return view('livewire.pages.parent.invoices', [
             'groupedInvoices' => $groupedInvoices,
             'totalUnpaidBalance' => $totalUnpaidBalance,
-            'selectedTotal' => $selectedTotal,
+            'invoicesTotal' => $invoicesTotal,
+            'serviceFee' => $serviceFee,
+            'totalToPay' => $totalToPay,
             'selectedInvoicesData' => $selectedInvoicesData,
+            'unpaidCount' => $unpaidCount,
         ])->title(__('Tagihan Anak'));
     }
 }

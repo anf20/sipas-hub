@@ -68,7 +68,7 @@
         @if($invoice->status === 'unpaid')
             <div class="p-normal bg-surface-container-low border-t border-outline-variant">
                 <flux:button 
-                    wire:click="pay" 
+                    wire:click="initiatePayment" 
                     variant="primary" 
                     class="w-full !rounded-2xl !py-4 shadow-lg active:scale-[0.98] transition-all"
                 >
@@ -124,5 +124,50 @@
         </div>
     @endif
 
+    <!-- Confirmation Modal (Invoice Summary) -->
+    <flux:modal wire:model="showConfirmationModal" class="min-w-[350px] max-w-[500px]">
+        <div class="space-y-6">
+            <div>
+                <flux:heading size="lg">{{ __('Ringkasan Pembayaran') }}</flux:heading>
+                <flux:subheading>{{ __('Pilih metode pembayaran dan tinjau rincian biaya.') }}</flux:subheading>
+            </div>
 
+            <div class="space-y-3">
+                <flux:label>{{ __('Metode Pembayaran') }}</flux:label>
+                <flux:radio.group wire:model.live="paymentMethod" variant="cards" class="flex flex-col gap-2">
+                    <flux:radio value="bca_va" label="BCA Virtual Account" description="Biaya Flat Rp 4.500" />
+                    <flux:radio value="bri_va" label="BRI Virtual Account" description="Biaya Flat Rp 4.500" />
+                    <flux:radio value="echannel" label="Mandiri Bill Payment" description="Biaya Flat Rp 4.500" />
+                    <flux:radio value="qris" label="QRIS (Gopay/Dana/OVO)" description="Biaya Layanan 0.7%" />
+                    <flux:radio value="dana" label="Dana (Direct)" description="Biaya Layanan 1.5%" />
+                </flux:radio.group>
+            </div>
+
+            <div class="space-y-4">
+                <div class="text-xs font-bold text-zinc-400 uppercase tracking-widest">{{ __('Rincian Tagihan') }}</div>
+                <div class="flex justify-between items-start border-b border-zinc-100 dark:border-zinc-800 pb-2">
+                    <div class="flex flex-col gap-0.5">
+                        <span class="font-semibold text-sm">{{ $invoice->feeType->name }}</span>
+                        <span class="text-xs text-zinc-500">{{ $invoice->student->name }}</span>
+                    </div>
+                    <span class="font-medium text-sm">Rp {{ number_format($invoice->amount, 0, ',', '.') }}</span>
+                </div>
+                
+                <div class="flex justify-between items-center pt-2">
+                    <span class="text-sm text-zinc-500">{{ __('Biaya Layanan') }}</span>
+                    <span class="font-medium text-sm">Rp {{ number_format($serviceFee, 0, ',', '.') }}</span>
+                </div>
+            </div>
+
+            <div class="bg-zinc-50 dark:bg-zinc-900 p-4 rounded-xl flex justify-between items-center border border-zinc-200 dark:border-zinc-700">
+                <span class="font-bold text-zinc-600 dark:text-zinc-400">{{ __('Total Bayar') }}</span>
+                <span class="font-display-lg text-xl font-bold text-primary">Rp {{ number_format($totalToPay, 0, ',', '.') }}</span>
+            </div>
+
+            <div class="flex gap-3">
+                <flux:button class="flex-1" variant="ghost" wire:click="$set('showConfirmationModal', false)">{{ __('Batal') }}</flux:button>
+                <flux:button class="flex-1" variant="primary" wire:click="pay">{{ __('Bayar Sekarang') }}</flux:button>
+            </div>
+        </div>
+    </flux:modal>
 </div>

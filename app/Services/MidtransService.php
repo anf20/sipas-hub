@@ -16,17 +16,27 @@ class MidtransService
         Config::$is3ds = config('services.midtrans.is_3ds');
     }
 
-    public function getSnapToken(Invoice $invoice): string
+    /**
+     * Calculate service fee based on method and amount
+     */
+    public function calculateFee(float $amount, string $method): float
     {
-        // Jika invoice sudah punya snap_token, kembalikan saja
-        if ($invoice->snap_token) {
-            return $invoice->snap_token;
-        }
+        return match ($method) {
+            'qris' => ceil($amount * 0.007), // 0.7%
+            'dana' => ceil($amount * 0.015), // 1.5%
+            'bca_va', 'bri_va', 'echannel' => 4500, // Flat VA
+            default => 5000,
+        };
+    }
+
+    public function getSnapToken(Invoice $invoice, string $method): string
+    {
+        $serviceFee = $this->calculateFee((float) $invoice->amount, $method);
 
         $params = [
             'transaction_details' => [
                 'order_id' => 'INV-'.$invoice->id.'-'.time(),
-                'gross_amount' => (int) $invoice->amount,
+                'gross_amount' => (int) $invoice->amount + (int) $serviceFee,
             ],
             'customer_details' => [
                 'first_name' => $invoice->student->name,
@@ -34,32 +44,35 @@ class MidtransService
             ],
             'item_details' => [
                 [
-                    'id' => $invoice->fee_type_id,
+                    'id' => 'FEETYPE-'.$invoice->fee_type_id,
                     'price' => (int) $invoice->amount,
                     'quantity' => 1,
-                    'name' => $invoice->feeType->name.' - '.$invoice->period_month.'/'.$invoice->period_year,
+                    'name' => substr($invoice->feeType->name.' - '.$invoice->period_month.'/'.$invoice->period_year, 0, 50),
+                ],
+                [
+                    'id' => 'SERVICE-FEE',
+                    'price' => (int) $serviceFee,
+                    'quantity' => 1,
+                    'name' => 'Biaya Layanan Online',
                 ],
             ],
+            'enabled_payments' => [$method],
         ];
 
-        $snapToken = Snap::getSnapToken($params);
-
-        $invoice->update(['snap_token' => $snapToken]);
-
-        return $snapToken;
+        return Snap::getSnapToken($params);
     }
 
     /**
      * Generate Snap Token for multiple invoices
      */
-    public function getBulkSnapToken($invoices, $user): string
+    public function getBulkSnapToken($invoices, $user, string $method): string
     {
-        $totalAmount = 0;
+        $totalInvoicesAmount = 0;
         $itemDetails = [];
         $invoiceIds = [];
 
         foreach ($invoices as $invoice) {
-            $totalAmount += (int) $invoice->amount;
+            $totalInvoicesAmount += (float) $invoice->amount;
             $invoiceIds[] = $invoice->id;
 
             $itemDetails[] = [
@@ -70,16 +83,26 @@ class MidtransService
             ];
         }
 
+        $serviceFee = $this->calculateFee($totalInvoicesAmount, $method);
+
+        $itemDetails[] = [
+            'id' => 'SERVICE-FEE',
+            'price' => (int) $serviceFee,
+            'quantity' => 1,
+            'name' => 'Biaya Layanan Online',
+        ];
+
         $params = [
             'transaction_details' => [
                 'order_id' => 'BULK-'.time().'-'.substr(md5(implode(',', $invoiceIds)), 0, 8),
-                'gross_amount' => $totalAmount,
+                'gross_amount' => (int) $totalInvoicesAmount + (int) $serviceFee,
             ],
             'customer_details' => [
                 'first_name' => $user->name,
                 'email' => $user->email,
             ],
             'item_details' => $itemDetails,
+            'enabled_payments' => [$method],
         ];
 
         return Snap::getSnapToken($params);
