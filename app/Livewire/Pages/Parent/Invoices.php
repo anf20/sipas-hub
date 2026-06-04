@@ -3,6 +3,7 @@
 namespace App\Livewire\Pages\Parent;
 
 use App\Models\Invoice;
+use App\Services\MidtransService;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
@@ -12,9 +13,58 @@ class Invoices extends Component
 {
     public $filter = 'all';
 
+    public bool $isSelectMode = false;
+
+    public bool $showConfirmationModal = false;
+
+    public array $selectedInvoices = [];
+
     public function setFilter($filter)
     {
         $this->filter = $filter;
+        $this->isSelectMode = false;
+        $this->selectedInvoices = [];
+        $this->showConfirmationModal = false;
+    }
+
+    public function toggleSelectMode()
+    {
+        $this->isSelectMode = ! $this->isSelectMode;
+        $this->selectedInvoices = [];
+        $this->showConfirmationModal = false;
+    }
+
+    public function initiatePayment()
+    {
+        if (empty($this->selectedInvoices)) {
+            \Flux::toast(__('Pilih minimal satu tagihan.'), variant: 'warning');
+
+            return;
+        }
+
+        $this->showConfirmationModal = true;
+    }
+
+    public function paySelected()
+    {
+        $invoices = Invoice::whereIn('id', $this->selectedInvoices)
+            ->where('status', 'unpaid')
+            ->get();
+
+        if ($invoices->isEmpty()) {
+            return;
+        }
+
+        try {
+            $midtransService = app(MidtransService::class);
+            $snapToken = $midtransService->getBulkSnapToken($invoices, Auth::user());
+
+            $this->showConfirmationModal = false;
+            $this->dispatch('show-snap-popup', snapToken: $snapToken);
+        } catch (\Exception $e) {
+            \Log::error('Bulk Midtrans Error: '.$e->getMessage());
+            \Flux::toast(__('Gagal memulai pembayaran massal.'), variant: 'danger');
+        }
     }
 
     public function render()
@@ -38,12 +88,20 @@ class Invoices extends Component
             ->where('status', 'unpaid')
             ->sum('amount');
 
+        $selectedInvoicesData = Invoice::with(['student', 'feeType'])
+            ->whereIn('id', $this->selectedInvoices)
+            ->get();
+
+        $selectedTotal = $selectedInvoicesData->sum('amount');
+
         // Group invoices by student name
         $groupedInvoices = $invoices->groupBy(fn ($invoice) => $invoice->student->name);
 
         return view('livewire.pages.parent.invoices', [
             'groupedInvoices' => $groupedInvoices,
             'totalUnpaidBalance' => $totalUnpaidBalance,
+            'selectedTotal' => $selectedTotal,
+            'selectedInvoicesData' => $selectedInvoicesData,
         ])->title(__('Tagihan Anak'));
     }
 }

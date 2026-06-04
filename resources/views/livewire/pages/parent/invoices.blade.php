@@ -1,8 +1,13 @@
 <div class="flex flex-col gap-huge">
     <!-- Page Title & Summary -->
     <section class="flex flex-col gap-tiny px-1">
-        <h2 class="font-headline-md text-2xl font-semibold text-primary">{{ __('Tagihan Aktif') }}</h2>
-        <p class="font-body-md text-sm text-on-surface-variant">{{ __('Tinjau dan selesaikan biaya pendidikan putra-putri Anda.') }}</p>
+        <div class="flex items-center justify-between">
+            <div>
+                <h2 class="font-headline-md text-2xl font-semibold text-primary">{{ __('Tagihan Aktif') }}</h2>
+                <p class="font-body-md text-sm text-on-surface-variant">{{ __('Tinjau dan selesaikan biaya pendidikan putra-putri Anda.') }}</p>
+            </div>
+            
+        </div>
     </section>
 
     <!-- Category Filters -->
@@ -25,10 +30,12 @@
         >
             {{ __('Sudah Bayar') }}
         </button>
+        
     </nav>
 
     <!-- Grouped Invoices -->
     <div class="flex flex-col gap-large">
+        
         @forelse($groupedInvoices as $studentName => $studentInvoices)
             <div class="flex flex-col gap-normal">
                 <div class="flex items-center gap-2 px-1">
@@ -40,54 +47,59 @@
                 </div>
                 <div class="flex flex-col gap-3">
                     @foreach($studentInvoices as $invoice)
-                        <a 
-                            href="{{ route('parent.invoices.show', $invoice) }}"
-                            wire:navigate
-                            class="bg-surface-container-lowest p-normal rounded-xl border border-outline-variant shadow-sm flex items-center justify-between hover:bg-surface-container transition-colors group cursor-pointer text-left"
-                        >
-                            <div class="flex items-center gap-normal text-left">
-                                <div class="w-12 h-12 rounded-xl bg-surface-container flex items-center justify-center group-hover:bg-surface-container-highest transition-colors shrink-0">
-                                    @php
-                                        $category = strtolower($invoice->feeType->category);
-                                    @endphp
-                                    @if($category === 'spp') 
-                                        <flux:icon.book-open variant="outline" class="size-5 text-primary" />
-                                    @elseif($category === 'seragam') 
-                                        <flux:icon.briefcase variant="outline" class="size-5 text-primary" />
-                                    @elseif($category === 'kegiatan')
-                                        <flux:icon.calendar-days variant="outline" class="size-5 text-primary" />
-                                    @else 
-                                        <flux:icon.banknotes variant="outline" class="size-5 text-primary" />
-                                    @endif
-                                </div>
-                                <div class="flex flex-col text-left">
-                                    <p class="font-label-bold text-sm font-semibold text-on-surface leading-tight">{{ $invoice->feeType->name }}</p>
-                                    <div class="flex flex-col gap-0.5">
-                                        @if($invoice->period_month && $invoice->period_year)
-                                            <p class="font-caption text-[10px] text-on-surface-variant/80">
-                                                {{ __('Periode: :month :year', [
-                                                    'month' => Carbon\Carbon::create()->month($invoice->period_month)->translatedFormat('F'),
-                                                    'year' => $invoice->period_year
-                                                ]) }}
-                                            </p>
+                        <div class="flex items-center gap-3">
+                            @if($isSelectMode && $invoice->status === 'unpaid')
+                                <flux:checkbox wire:model.live="selectedInvoices" value="{{ $invoice->id }}" class="shrink-0" />
+                            @endif
+                            
+                            <a 
+                                @if(!$isSelectMode) href="{{ route('parent.invoices.show', $invoice) }}" wire:navigate @endif
+                                class="bg-surface-container-lowest p-normal rounded-xl border border-outline-variant shadow-sm flex items-center justify-between hover:bg-surface-container transition-colors group cursor-pointer text-left flex-1"
+                            >
+                                <div class="flex items-center gap-normal text-left">
+                                    <div class="w-12 h-12 rounded-xl bg-surface-container flex items-center justify-center group-hover:bg-surface-container-highest transition-colors shrink-0">
+                                        @php
+                                            $category = strtolower($invoice->feeType->category);
+                                        @endphp
+                                        @if($category === 'spp') 
+                                            <flux:icon.book-open variant="outline" class="size-5 text-primary" />
+                                        @elseif($category === 'seragam') 
+                                            <flux:icon.briefcase variant="outline" class="size-5 text-primary" />
+                                        @elseif($category === 'kegiatan')
+                                            <flux:icon.calendar-days variant="outline" class="size-5 text-primary" />
+                                        @else 
+                                            <flux:icon.banknotes variant="outline" class="size-5 text-primary" />
                                         @endif
-                                        <p class="font-caption text-xs text-on-surface-variant">{{ __('Jatuh Tempo: :date', ['date' => $invoice->due_date->translatedFormat('d M Y')]) }}</p>
+                                    </div>
+                                    <div class="flex flex-col text-left">
+                                        <p class="font-label-bold text-sm font-semibold text-on-surface leading-tight">{{ $invoice->feeType->name }}</p>
+                                        <div class="flex flex-col gap-0.5">
+                                            @if($invoice->period_month && $invoice->period_year)
+                                                <p class="font-caption text-[10px] text-on-surface-variant/80">
+                                                    {{ __('Periode: :month :year', [
+                                                        'month' => Carbon\Carbon::create()->month($invoice->period_month)->translatedFormat('F'),
+                                                        'year' => $invoice->period_year
+                                                    ]) }}
+                                                </p>
+                                            @endif
+                                            <p class="font-caption text-xs text-on-surface-variant">{{ __('Jatuh Tempo: :date', ['date' => $invoice->due_date->translatedFormat('d M Y')]) }}</p>
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
-                            <div class="text-right flex flex-col items-end gap-1">
-                                <p class="font-display-lg text-lg font-semibold text-primary">Rp {{ number_format($invoice->amount, 0, ',', '.') }}</p>
-                                @if($invoice->status === 'paid')
-                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-secondary-container text-on-secondary-container">
-                                        {{ __('Sudah Bayar') }}
-                                    </span>
-                                @else
-                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-error-container text-on-error-container">
-                                        {{ __('Belum Bayar') }}
-                                    </span>
-                                @endif
-                            </div>
-                        </a>
+                                <div class="text-right flex flex-col items-end gap-1">
+                                    <p class="font-display-lg text-lg font-semibold text-primary">Rp {{ number_format($invoice->amount, 0, ',', '.') }}</p>
+                                    @if($invoice->status === 'paid')
+                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-secondary-container text-on-secondary-container">
+                                            {{ __('Sudah Bayar') }}
+                                        </span>
+                                    @else
+                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-error-container text-on-error-container">
+                                            {{ __('Belum Bayar') }}
+                                        </span>
+                                    @endif
+                                </div>
+                            </a>
+                        </div>
                     @endforeach
                 </div>
             </div>
@@ -96,6 +108,16 @@
                 {{ __('Tidak ada tagihan yang ditemukan.') }}
             </div>
         @endforelse
+        @if($totalUnpaidBalance > 0 && ($filter === 'all' || $filter === 'unpaid'))
+                <flux:button 
+                    size="sm" 
+                    variant="{{ $isSelectMode ? 'primary' : 'outline' }}" 
+                    wire:click="toggleSelectMode"
+                    class="shrink-0"
+                >
+                    {{ $isSelectMode ? __('Batal') : __('Bayar Sekaligus') }}
+                </flux:button>
+            @endif
     </div>
 
     <!-- Quick Summary Section -->
@@ -103,14 +125,66 @@
         <div class="bg-primary-container text-on-primary-container rounded-2xl p-large flex flex-col gap-normal shadow-xl sticky bottom-2 z-10 mx-1 border border-white/10">
             <div class="flex justify-between items-start px-1">
                 <div>
-                    <p class="font-label-bold text-xs font-semibold opacity-80 uppercase tracking-wider text-on-primary-container">{{ __('Total Belum Dibayar') }}</p>
-                    <h4 class="font-display-lg text-2xl font-semibold text-white mt-1">Rp {{ number_format($totalUnpaidBalance, 0, ',', '.') }}</h4>
+                    @if($isSelectMode)
+                        <p class="font-label-bold text-xs font-semibold opacity-80 uppercase tracking-wider text-on-primary-container">{{ __('Total Terpilih (:count)', ['count' => count($selectedInvoices)]) }}</p>
+                        <h4 class="font-display-lg text-2xl font-semibold text-white mt-1">Rp {{ number_format($selectedTotal, 0, ',', '.') }}</h4>
+                    @else
+                        <p class="font-label-bold text-xs font-semibold opacity-80 uppercase tracking-wider text-on-primary-container">{{ __('Total Belum Dibayar') }}</p>
+                        <h4 class="font-display-lg text-2xl font-semibold text-white mt-1">Rp {{ number_format($totalUnpaidBalance, 0, ',', '.') }}</h4>
+                    @endif
                 </div>
                 <div class="bg-white/10 p-2.5 rounded-xl text-white">
                     <flux:icon.credit-card variant="outline" class="size-6" />
                 </div>
             </div>
-            <p class="text-[10px] text-white/70 italic px-1">{{ __('* Silakan klik pada kartu tagihan di atas untuk melihat detail dan melakukan pembayaran.') }}</p>
+
+            @if($isSelectMode)
+                <flux:button 
+                    wire:click="initiatePayment" 
+                    variant="primary" 
+                    class="w-full !bg-secondary !text-white border-none mt-2 h-[52px] !rounded-xl"
+                    :disabled="empty($selectedInvoices)"
+                >
+                    {{ __('Bayar Sekarang') }}
+                </flux:button>
+            @else
+                <p class="text-[10px] text-white/70 italic px-1">{{ __('* Silakan klik pada kartu tagihan di atas untuk melihat detail dan melakukan pembayaran.') }}</p>
+            @endif
         </div>
     @endif
+
+    <!-- Confirmation Modal (Invoice Summary) -->
+    <flux:modal wire:model="showConfirmationModal" class="min-w-[350px] max-w-[500px]">
+        <div class="space-y-6">
+            <div>
+                <flux:heading size="lg">{{ __('Ringkasan Pembayaran') }}</flux:heading>
+                <flux:subheading>{{ __('Tinjau kembali rincian tagihan sebelum melanjutkan pembayaran.') }}</flux:subheading>
+            </div>
+
+            <div class="space-y-4 max-h-[40vh] overflow-y-auto pr-2">
+                @foreach($selectedInvoicesData as $item)
+                    <div class="flex justify-between items-start border-b border-zinc-100 dark:border-zinc-800 pb-3">
+                        <div class="flex flex-col gap-0.5">
+                            <span class="font-semibold text-sm">{{ $item->feeType->name }}</span>
+                            <span class="text-xs text-zinc-500">{{ $item->student->name }}</span>
+                            <span class="text-[10px] text-zinc-400 italic">
+                                {{ $item->period_month ? Carbon\Carbon::create()->month($item->period_month)->translatedFormat('F') : '' }} {{ $item->period_year }}
+                            </span>
+                        </div>
+                        <span class="font-medium text-sm">Rp {{ number_format($item->amount, 0, ',', '.') }}</span>
+                    </div>
+                @endforeach
+            </div>
+
+            <div class="bg-zinc-50 dark:bg-zinc-900 p-4 rounded-xl flex justify-between items-center border border-zinc-200 dark:border-zinc-700">
+                <span class="font-bold text-zinc-600 dark:text-zinc-400">{{ __('Total Bayar') }}</span>
+                <span class="font-display-lg text-xl font-bold text-primary">Rp {{ number_format($selectedTotal, 0, ',', '.') }}</span>
+            </div>
+
+            <div class="flex gap-3">
+                <flux:button class="flex-1" variant="ghost" wire:click="$set('showConfirmationModal', false)">{{ __('Batal') }}</flux:button>
+                <flux:button class="flex-1" variant="primary" wire:click="paySelected">{{ __('Konfirmasi & Bayar') }}</flux:button>
+            </div>
+        </div>
+    </flux:modal>
 </div>
