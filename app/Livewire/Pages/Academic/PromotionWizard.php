@@ -11,9 +11,13 @@ use Livewire\Component;
 class PromotionWizard extends Component
 {
     public $sourceYearId;
+
     public $sourceClassId;
+
     public $targetYearId;
+
     public $targetClassId;
+
     public $selectedStudents = [];
 
     public function updatedSourceYearId()
@@ -36,9 +40,10 @@ class PromotionWizard extends Component
 
         $targetClass = SchoolClass::findOrFail($this->targetClassId);
         $currentCount = $targetClass->students()->count();
-        
+
         if ($currentCount + count($this->selectedStudents) > $targetClass->capacity) {
             session()->flash('error', __('Kapasitas kelas tujuan tidak mencukupi.'));
+
             return;
         }
 

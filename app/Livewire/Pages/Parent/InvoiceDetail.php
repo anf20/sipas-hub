@@ -18,8 +18,8 @@ class InvoiceDetail extends Component
         // Ensure the invoice belongs to a student of the current parent
         $user = Auth::user();
         $studentIds = $user->students()->pluck('students.id')->toArray();
-        
-        if (!in_array($invoice->student_id, $studentIds)) {
+
+        if (! in_array($invoice->student_id, $studentIds)) {
             abort(403, 'Unauthorized access to this invoice.');
         }
 
@@ -30,16 +30,17 @@ class InvoiceDetail extends Component
     {
         if ($this->invoice->status === 'paid') {
             \Flux::toast(__('Tagihan ini sudah lunas.'), variant: 'warning');
+
             return;
         }
 
         try {
             $midtransService = app(MidtransService::class);
             $snapToken = $midtransService->getSnapToken($this->invoice);
-            
+
             $this->dispatch('show-snap-popup', snapToken: $snapToken);
         } catch (\Exception $e) {
-            \Log::error('Midtrans Snap Error: ' . $e->getMessage());
+            \Log::error('Midtrans Snap Error: '.$e->getMessage());
             \Flux::toast(__('Gagal memulai pembayaran. Silakan coba lagi nanti.'), variant: 'danger');
         }
     }

@@ -33,7 +33,7 @@
             <div class="flex flex-col gap-normal">
                 <div class="flex items-center gap-2 px-1">
                     <div class="w-8 h-8 rounded-full bg-primary-container/10 flex items-center justify-center">
-                        <span class="material-symbols-outlined text-primary text-[20px]">face</span>
+                        <flux:icon.user variant="outline" class="text-primary size-5" />
                     </div>
                     <h3 class="font-title-sm text-lg font-medium text-primary">{{ $studentName }}</h3>
                     <div class="h-[1px] flex-1 bg-outline-variant opacity-50 ml-2"></div>
@@ -47,20 +47,18 @@
                         >
                             <div class="flex items-center gap-normal text-left">
                                 <div class="w-12 h-12 rounded-xl bg-surface-container flex items-center justify-center group-hover:bg-surface-container-highest transition-colors shrink-0">
-                                    <span class="material-symbols-outlined text-primary">
-                                        @php
-                                            $category = strtolower($invoice->feeType->category);
-                                        @endphp
-                                        @if($category === 'spp') 
-                                            menu_book 
-                                        @elseif($category === 'seragam') 
-                                            checkroom 
-                                        @elseif($category === 'kegiatan')
-                                            event_available
-                                        @else 
-                                            payments 
-                                        @endif
-                                    </span>
+                                    @php
+                                        $category = strtolower($invoice->feeType->category);
+                                    @endphp
+                                    @if($category === 'spp') 
+                                        <flux:icon.book-open variant="outline" class="size-5 text-primary" />
+                                    @elseif($category === 'seragam') 
+                                        <flux:icon.briefcase variant="outline" class="size-5 text-primary" />
+                                    @elseif($category === 'kegiatan')
+                                        <flux:icon.calendar-days variant="outline" class="size-5 text-primary" />
+                                    @else 
+                                        <flux:icon.banknotes variant="outline" class="size-5 text-primary" />
+                                    @endif
                                 </div>
                                 <div class="flex flex-col text-left">
                                     <p class="font-label-bold text-sm font-semibold text-on-surface leading-tight">{{ $invoice->feeType->name }}</p>
@@ -109,7 +107,7 @@
                     <h4 class="font-display-lg text-2xl font-semibold text-white mt-1">Rp {{ number_format($totalUnpaidBalance, 0, ',', '.') }}</h4>
                 </div>
                 <div class="bg-white/10 p-2.5 rounded-xl text-white">
-                    <span class="material-symbols-outlined">account_balance_wallet</span>
+                    <flux:icon.credit-card variant="outline" class="size-6" />
                 </div>
             </div>
             <p class="text-[10px] text-white/70 italic px-1">{{ __('* Silakan klik pada kartu tagihan di atas untuk melihat detail dan melakukan pembayaran.') }}</p>

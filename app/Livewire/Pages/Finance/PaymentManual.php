@@ -16,10 +16,12 @@ class PaymentManual extends Component
     public $search = '';
 
     public $selectedStudentId = null;
-    
+
     // Payment form state for modal
     public $selectedInvoiceId = null;
+
     public $paymentMethod = 'cash';
+
     public $paymentAmount = 0;
 
     public function selectStudent($id)
@@ -63,17 +65,17 @@ class PaymentManual extends Component
             $invoice = Invoice::where('id', $this->selectedInvoiceId)->where('status', 'unpaid')->lockForUpdate()->firstOrFail();
 
             // Generate receipt number (SCH-YYYYMM-XXXX)
-            $prefix = 'SCH-' . date('Ym') . '-';
-            $lastPayment = Payment::where('receipt_number', 'like', $prefix . '%')
-                                  ->orderBy('id', 'desc')
-                                  ->first();
-            
+            $prefix = 'SCH-'.date('Ym').'-';
+            $lastPayment = Payment::where('receipt_number', 'like', $prefix.'%')
+                ->orderBy('id', 'desc')
+                ->first();
+
             $sequence = 1;
             if ($lastPayment) {
                 $lastSequence = (int) substr($lastPayment->receipt_number, -4);
                 $sequence = $lastSequence + 1;
             }
-            $receiptNumber = $prefix . str_pad($sequence, 4, '0', STR_PAD_LEFT);
+            $receiptNumber = $prefix.str_pad($sequence, 4, '0', STR_PAD_LEFT);
 
             // Create Payment Record
             Payment::create([
@@ -93,13 +95,13 @@ class PaymentManual extends Component
             DB::commit();
 
             \Flux::toast(__('Pembayaran berhasil diproses. Nomor Kwitansi: :receipt', ['receipt' => $receiptNumber]), variant: 'success');
-            
+
             $this->dispatch('close-modal', 'payment-modal');
             $this->resetPaymentForm();
 
         } catch (\Exception $e) {
             DB::rollBack();
-            Log::error("Manual Payment Failed: " . $e->getMessage());
+            Log::error('Manual Payment Failed: '.$e->getMessage());
             \Flux::toast(__('Gagal memproses pembayaran. Silakan coba lagi.'), variant: 'danger');
         }
     }
@@ -110,9 +112,9 @@ class PaymentManual extends Component
         if (strlen($this->search) >= 2) {
             $students = Student::with('schoolClass')
                 ->where('status', 'aktif')
-                ->where(function($q) {
+                ->where(function ($q) {
                     $q->where('name', 'like', '%'.$this->search.'%')
-                      ->orWhere('nis', 'like', '%'.$this->search.'%');
+                        ->orWhere('nis', 'like', '%'.$this->search.'%');
                 })
                 ->limit(5)
                 ->get();

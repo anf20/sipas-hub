@@ -14,12 +14,12 @@ beforeEach(function () {
     $this->seed(RoleSeeder::class);
     $this->user = User::factory()->create();
     $this->user->assignRole('Super Admin');
-    
+
     $this->academicYear = AcademicYear::factory()->create(['is_active' => true]);
     $this->schoolClass = SchoolClass::factory()->create([
         'academic_year_id' => $this->academicYear->id,
         'grade' => '7',
-        'name' => 'Kelas 7 Test'
+        'name' => 'Kelas 7 Test',
     ]);
 });
 

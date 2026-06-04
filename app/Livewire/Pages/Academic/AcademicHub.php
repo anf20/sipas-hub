@@ -78,6 +78,7 @@ class AcademicHub extends Component
         $year = AcademicYear::findOrFail($id);
         if ($year->schoolClasses()->exists()) {
             session()->flash('error', __('Tidak dapat menghapus Tahun Ajaran yang memiliki data kelas.'));
+
             return;
         }
         $year->delete();
@@ -90,6 +91,7 @@ class AcademicHub extends Component
         $class = SchoolClass::findOrFail($id);
         if ($class->students()->exists()) {
             session()->flash('error', __('Tidak dapat menghapus kelas yang memiliki data siswa.'));
+
             return;
         }
         $class->delete();
@@ -116,7 +118,7 @@ class AcademicHub extends Component
             ->where('status', 'aktif')
             ->groupBy('gender')
             ->get();
-        $genderLabels = $genderData->pluck('gender')->map(fn($g) => $g === 'L' ? __('Laki-laki') : __('Perempuan'))->toArray();
+        $genderLabels = $genderData->pluck('gender')->map(fn ($g) => $g === 'L' ? __('Laki-laki') : __('Perempuan'))->toArray();
         $genderValues = $genderData->pluck('total')->toArray();
 
         // Grade Chart Data
@@ -131,7 +133,7 @@ class AcademicHub extends Component
         $classesQuery = SchoolClass::with(['academicYear', 'homeroomTeacher'])
             ->withCount('students')
             ->when($this->classSearch, function ($query) {
-                $query->where('name', 'like', '%' . $this->classSearch . '%');
+                $query->where('name', 'like', '%'.$this->classSearch.'%');
             })
             ->when($this->classYearFilter, function ($query) {
                 $query->where('academic_year_id', $this->classYearFilter);
@@ -142,8 +144,8 @@ class AcademicHub extends Component
         $studentsQuery = Student::with('schoolClass')
             ->when($this->studentSearch, function ($query) {
                 $query->where(function ($q) {
-                    $q->where('name', 'like', '%' . $this->studentSearch . '%')
-                      ->orWhere('nis', 'like', '%' . $this->studentSearch . '%');
+                    $q->where('name', 'like', '%'.$this->studentSearch.'%')
+                        ->orWhere('nis', 'like', '%'.$this->studentSearch.'%');
                 });
             })
             ->when($this->studentClassFilter, function ($query) {

@@ -6,9 +6,9 @@ use App\Livewire\Pages\Management\UserCreate;
 use App\Livewire\Pages\Management\UserEdit;
 use App\Livewire\Pages\Management\UserIndex;
 use App\Models\User;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Livewire\Livewire;
 use Spatie\Permission\Models\Role;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 
 uses(RefreshDatabase::class);
 

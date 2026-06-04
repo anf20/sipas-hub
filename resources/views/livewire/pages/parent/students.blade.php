@@ -16,13 +16,15 @@
                             <img src="{{ asset('storage/' . $student->photo) }}" class="w-16 h-16 rounded-2xl object-cover border border-outline-variant">
                         @else
                             <div class="w-16 h-16 rounded-2xl bg-primary-container/10 flex items-center justify-center border border-outline-variant">
-                                <span class="material-symbols-outlined text-primary text-3xl">person</span>
+                                <flux:icon.user variant="outline" class="text-primary size-8" />
                             </div>
                         @endif
                         <div class="absolute -bottom-1 -right-1 w-6 h-6 rounded-full {{ $student->status === 'aktif' ? 'bg-secondary' : 'bg-zinc-400' }} border-2 border-white flex items-center justify-center">
-                            <span class="material-symbols-outlined text-white text-[14px]">
-                                {{ $student->status === 'aktif' ? 'check' : 'close' }}
-                            </span>
+                            @if($student->status === 'aktif')
+                                <flux:icon.check variant="outline" class="text-white size-3" />
+                            @else
+                                <flux:icon.x-mark variant="outline" class="text-white size-3" />
+                            @endif
                         </div>
                     </div>
 
@@ -33,7 +35,7 @@
                         
                         <div class="mt-2 flex flex-wrap gap-2">
                             <div class="flex items-center gap-1">
-                                <span class="material-symbols-outlined text-xs text-on-surface-variant">class</span>
+                                <flux:icon.academic-cap variant="outline" class="size-3.5 text-on-surface-variant" />
                                 <span class="font-label-bold text-xs font-semibold text-on-surface-variant">
                                     @if($student->schoolClass)
                                         {{ $student->schoolClass->name }} ({{ $student->schoolClass->grade }})
@@ -44,7 +46,7 @@
                             </div>
                         </div>
                         <div class="mt-1 flex items-center gap-1">
-                            <span class="material-symbols-outlined text-xs text-secondary">calendar_today</span>
+                            <flux:icon.calendar variant="outline" class="size-3.5 text-secondary" />
                             <span class="font-caption text-[10px] text-secondary">
                                 @if($student->schoolClass)
                                     {{ __('Tahun Ajaran :year', ['year' => $student->schoolClass->academicYear->name]) }}
@@ -61,7 +63,7 @@
                     <flux:button variant="ghost" size="sm" :href="route('parent.invoices')" class="!text-xs font-semibold text-primary" wire:navigate>
                         {{ __('Lihat Tagihan') }}
                     </flux:button>
-                    <span class="material-symbols-outlined text-zinc-400 text-sm">chevron_right</span>
+                    <flux:icon.chevron-right variant="outline" class="text-zinc-400 size-4" />
                 </div>
             </div>
         @empty
@@ -72,7 +74,7 @@
 
         <!-- Info Box -->
         <div class="mt-smallall p-normal bg-surface-container-high/50 rounded-2xl flex gap-normal items-start">
-            <span class="material-symbols-outlined text-on-surface-variant">help_outline</span>
+            <flux:icon.question-mark-circle variant="outline" class="text-on-surface-variant size-5" />
             <p class="font-caption text-xs text-on-surface-variant mt-xs leading-relaxed">{{ __('Jika Anda tidak melihat salah satu anak Anda terdaftar, silakan hubungi kantor administrasi sekolah untuk memverifikasi alamat email Anda.') }}</p>
         </div>
     </div>

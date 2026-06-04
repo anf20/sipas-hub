@@ -16,8 +16,8 @@ class PaymentSuccess extends Component
     {
         // Ensure the payment belongs to one of the user's students
         $studentIds = Auth::user()->students->pluck('id')->toArray();
-        
-        if (!in_array($payment->invoice->student_id, $studentIds)) {
+
+        if (! in_array($payment->invoice->student_id, $studentIds)) {
             abort(403);
         }
 

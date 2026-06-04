@@ -25,7 +25,7 @@ class MidtransService
 
         $params = [
             'transaction_details' => [
-                'order_id' => 'INV-' . $invoice->id . '-' . time(),
+                'order_id' => 'INV-'.$invoice->id.'-'.time(),
                 'gross_amount' => (int) $invoice->amount,
             ],
             'customer_details' => [
@@ -37,7 +37,7 @@ class MidtransService
                     'id' => $invoice->fee_type_id,
                     'price' => (int) $invoice->amount,
                     'quantity' => 1,
-                    'name' => $invoice->feeType->name . ' - ' . $invoice->period_month . '/' . $invoice->period_year,
+                    'name' => $invoice->feeType->name.' - '.$invoice->period_month.'/'.$invoice->period_year,
                 ],
             ],
         ];

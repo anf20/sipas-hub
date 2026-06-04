@@ -4,6 +4,7 @@ namespace App\Livewire\Pages\Finance;
 
 use App\Jobs\GenerateInvoices;
 use App\Models\FeeType;
+use Illuminate\Support\Facades\Log;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
 
@@ -11,8 +12,11 @@ use Livewire\Component;
 class SppIndex extends Component
 {
     public $month;
+
     public $year;
+
     public $default_amount = 0;
+
     public $due_date;
 
     public function mount()
@@ -51,10 +55,10 @@ class SppIndex extends Component
         ]);
 
         // 2. Dispatch background generation synchronously
-        \Illuminate\Support\Facades\Log::info('Dispatching SPP generation (Sync)', [
+        Log::info('Dispatching SPP generation (Sync)', [
             'fee_type_id' => $feeType->id,
             'month' => (int) $this->month,
-            'year' => (int) $this->year
+            'year' => (int) $this->year,
         ]);
 
         GenerateInvoices::dispatchSync(
@@ -71,7 +75,7 @@ class SppIndex extends Component
         // Reset inputs after success
         $this->month = (int) date('n');
         $this->due_date = date('Y-m-d', strtotime('+10 days'));
-        
+
         $this->dispatch('close-modal', 'generate-spp-modal');
     }
 

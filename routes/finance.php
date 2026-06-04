@@ -1,19 +1,19 @@
 <?php
 
-use App\Livewire\Pages\Finance\FinanceHub;
+use App\Http\Controllers\FinanceReportController;
 use App\Livewire\Pages\Finance\FeeTypeCreate;
 use App\Livewire\Pages\Finance\FeeTypeEdit;
 use App\Livewire\Pages\Finance\FeeTypeShow;
+use App\Livewire\Pages\Finance\FinanceHub;
 use App\Livewire\Pages\Finance\PaymentManual;
-use App\Http\Controllers\FinanceReportController;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware(['auth', 'verified'])->prefix('finance')->name('finance.')->group(function () {
     Route::get('/', FinanceHub::class)->name('hub');
 
     // Backward compatibility redirects
-    Route::get('spp', fn() => redirect()->route('finance.hub', ['tab' => 'spp']))->name('spp.index');
-    Route::get('fee-types', fn() => redirect()->route('finance.hub', ['tab' => 'fees']))->name('fee-types.index');
+    Route::get('spp', fn () => redirect()->route('finance.hub', ['tab' => 'spp']))->name('spp.index');
+    Route::get('fee-types', fn () => redirect()->route('finance.hub', ['tab' => 'fees']))->name('fee-types.index');
 
     Route::get('fee-types/create', FeeTypeCreate::class)->name('fee-types.create');
     Route::get('fee-types/{feeType}', FeeTypeShow::class)->name('fee-types.show');

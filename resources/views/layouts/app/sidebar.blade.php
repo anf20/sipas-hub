@@ -57,6 +57,9 @@
                     <flux:sidebar.item icon="user-group" :href="route('management.users.index')" :current="request()->routeIs('management.users.*')" wire:navigate>
                         {{ __('Manajemen Pengguna') }}
                     </flux:sidebar.item>
+                    <flux:sidebar.item icon="arrow-path" :href="route('management.recovery')" :current="request()->routeIs('management.recovery')" wire:navigate>
+                        {{ __('Pusat Pemulihan') }}
+                    </flux:sidebar.item>
                 </flux:sidebar.group>
                 @endhasrole
             </flux:sidebar.nav>

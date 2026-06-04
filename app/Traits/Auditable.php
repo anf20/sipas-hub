@@ -17,7 +17,7 @@ trait Auditable
         static::updated(function ($model) {
             $oldValues = array_intersect_key($model->getOriginal(), $model->getDirty());
             $newValues = $model->getDirty();
-            
+
             $model->audit('updated', $oldValues, $newValues);
         });
 
@@ -30,7 +30,7 @@ trait Auditable
     {
         // Don't audit if not logged in (e.g. from CLI unless we want to track it)
         $userId = Auth::id();
-        
+
         AuditLog::create([
             'user_id' => $userId,
             'action' => $action,

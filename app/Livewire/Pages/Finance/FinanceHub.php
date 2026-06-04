@@ -3,11 +3,10 @@
 namespace App\Livewire\Pages\Finance;
 
 use App\Jobs\GenerateInvoices;
+use App\Models\AuditLog;
 use App\Models\FeeType;
 use App\Models\Invoice;
 use App\Models\Payment;
-use App\Models\AuditLog;
-use Illuminate\Support\Facades\DB;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Url;
 use Livewire\Component;
@@ -23,8 +22,11 @@ class FinanceHub extends Component
 
     // SPP Generation Fields
     public $month;
+
     public $year;
+
     public $default_amount = 0;
+
     public $due_date;
 
     public function mount()
@@ -190,7 +192,7 @@ class FinanceHub extends Component
             'otherCollectionRate' => $otherCollectionRate,
             'sppBatches' => FeeType::where('category', 'SPP')->latest()->get(),
             'otherFees' => FeeType::where('category', '!=', 'SPP')
-                ->withCount(['invoices as total_target', 'invoices as paid_target' => function($q) {
+                ->withCount(['invoices as total_target', 'invoices as paid_target' => function ($q) {
                     $q->where('status', 'paid');
                 }])
                 ->latest()->get(),

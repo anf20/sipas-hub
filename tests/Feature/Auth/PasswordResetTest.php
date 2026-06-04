@@ -2,6 +2,7 @@
 
 use App\Models\User;
 use Illuminate\Auth\Notifications\ResetPassword;
+use Illuminate\Foundation\Http\Middleware\PreventRequestForgery;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Notification;
 use Laravel\Fortify\Features;
@@ -19,7 +20,7 @@ test('reset password link screen can be rendered', function () {
 });
 
 test('reset password link can be requested', function () {
-    $this->withoutMiddleware([\Illuminate\Foundation\Http\Middleware\PreventRequestForgery::class]);
+    $this->withoutMiddleware([PreventRequestForgery::class]);
     Notification::fake();
 
     $user = User::factory()->create();
@@ -30,7 +31,7 @@ test('reset password link can be requested', function () {
 });
 
 test('reset password screen can be rendered', function () {
-    $this->withoutMiddleware([\Illuminate\Foundation\Http\Middleware\PreventRequestForgery::class]);
+    $this->withoutMiddleware([PreventRequestForgery::class]);
     Notification::fake();
 
     $user = User::factory()->create();
@@ -47,7 +48,7 @@ test('reset password screen can be rendered', function () {
 });
 
 test('password can be reset with valid token', function () {
-    $this->withoutMiddleware([\Illuminate\Foundation\Http\Middleware\PreventRequestForgery::class]);
+    $this->withoutMiddleware([PreventRequestForgery::class]);
     Notification::fake();
 
     $user = User::factory()->create();

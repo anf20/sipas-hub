@@ -11,20 +11,18 @@
             <div class="bg-surface-container-lowest p-normal rounded-xl border border-outline-variant shadow-sm flex items-center justify-between hover:bg-surface-container transition-colors group text-left">
                 <div class="flex items-center gap-normal text-left">
                     <div class="w-12 h-12 rounded-xl bg-secondary-container/10 flex items-center justify-center text-secondary group-hover:bg-secondary-container/20 transition-colors shrink-0">
-                        <span class="material-symbols-outlined">
-                            @php
-                                $category = strtolower($invoice->feeType->category);
-                            @endphp
-                            @if($category === 'spp') 
-                                menu_book 
-                            @elseif($category === 'seragam') 
-                                checkroom 
-                            @elseif($category === 'kegiatan')
-                                event_available
-                            @else 
-                                payments 
-                            @endif
-                        </span>
+                        @php
+                            $category = strtolower($invoice->feeType->category);
+                        @endphp
+                        @if($category === 'spp') 
+                            <flux:icon.book-open variant="outline" class="size-5" />
+                        @elseif($category === 'seragam') 
+                            <flux:icon.briefcase variant="outline" class="size-5" />
+                        @elseif($category === 'kegiatan')
+                            <flux:icon.calendar-days variant="outline" class="size-5" />
+                        @else 
+                            <flux:icon.banknotes variant="outline" class="size-5" />
+                        @endif
                     </div>
                     <div class="flex flex-col text-left">
                         <p class="font-label-bold text-sm font-semibold text-on-surface leading-tight">{{ $invoice->feeType->name }}</p>

@@ -10,9 +10,11 @@
         <!-- Status Header -->
         <div class="px-normal py-small flex items-center justify-between {{ $invoice->status === 'paid' ? 'bg-secondary-container/20' : 'bg-error-container/10' }}">
             <div class="flex items-center gap-2">
-                <span class="material-symbols-outlined text-[20px] {{ $invoice->status === 'paid' ? 'text-on-secondary-container' : 'text-on-error-container' }}">
-                    {{ $invoice->status === 'paid' ? 'check_circle' : 'pending' }}
-                </span>
+                @if($invoice->status === 'paid')
+                    <flux:icon.check-circle variant="solid" class="size-5 text-on-secondary-container" />
+                @else
+                    <flux:icon.clock variant="solid" class="size-5 text-on-error-container" />
+                @endif
                 <span class="font-label-bold text-xs uppercase tracking-wider {{ $invoice->status === 'paid' ? 'text-on-secondary-container' : 'text-on-error-container' }}">
                     {{ $invoice->status === 'paid' ? __('Lunas') : __('Belum Bayar') }}
                 </span>
@@ -70,7 +72,7 @@
                     variant="primary" 
                     class="w-full !rounded-2xl !py-4 shadow-lg active:scale-[0.98] transition-all"
                 >
-                    <span class="material-symbols-outlined mr-2">payments</span>
+                    <flux:icon.banknotes variant="outline" class="mr-2 size-5" />
                     {{ __('Bayar Sekarang') }}
                 </flux:button>
             </div>
@@ -78,7 +80,7 @@
              <div class="p-normal bg-surface-container-low border-t border-outline-variant">
                 <div class="flex flex-col items-center justify-center gap-3 py-2">
                     <div class="flex items-center gap-2 text-on-secondary-container">
-                        <span class="material-symbols-outlined text-secondary">verified</span>
+                        <flux:icon.check-badge variant="solid" class="text-secondary size-5" />
                         <span class="font-label-bold">{{ __('Tagihan ini sudah dibayar lunas.') }}</span>
                     </div>
                     @if($invoice->payments->first())
@@ -108,7 +110,7 @@
                     <div class="bg-surface-container-lowest p-normal rounded-2xl border border-outline-variant shadow-sm flex items-center justify-between">
                         <div class="flex items-center gap-normal">
                             <div class="w-10 h-10 rounded-full bg-secondary-container/10 flex items-center justify-center">
-                                <span class="material-symbols-outlined text-on-secondary-container">receipt_long</span>
+                                <flux:icon.document-text variant="outline" class="text-on-secondary-container size-5" />
                             </div>
                             <div>
                                 <p class="font-label-bold text-sm font-semibold text-on-surface">{{ __('Pembayaran Berhasil') }}</p>

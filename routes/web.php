@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\MidtransCallbackController;
+use App\Livewire\Pages\Admin\Dashboard;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -15,7 +16,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
             return redirect()->route('parent.dashboard');
         }
 
-        return app(\App\Livewire\Pages\Admin\Dashboard::class)();
+        return app(Dashboard::class)();
     })->name('dashboard');
 });
 

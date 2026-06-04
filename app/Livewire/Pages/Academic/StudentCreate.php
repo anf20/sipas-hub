@@ -5,6 +5,7 @@ namespace App\Livewire\Pages\Academic;
 use App\Models\SchoolClass;
 use App\Models\Student;
 use App\Models\User;
+use Illuminate\Support\Facades\Hash;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
 use Livewire\WithFileUploads;
@@ -34,7 +35,9 @@ class StudentCreate extends Component
 
     // Form data untuk Wali Murid Baru
     public $newParentName;
+
     public $newParentEmail;
+
     public $newParentPhone;
 
     public function mount()
@@ -54,7 +57,7 @@ class StudentCreate extends Component
             'name' => $this->newParentName,
             'email' => $this->newParentEmail,
             'phone' => $this->newParentPhone,
-            'password' => \Illuminate\Support\Facades\Hash::make('password123'), // Password default
+            'password' => Hash::make('password123'), // Password default
         ]);
 
         $parent->assignRole('Orang Tua');

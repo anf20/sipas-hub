@@ -72,7 +72,7 @@ $routes = [
 foreach ($routes as $name => $path) {
     it("can access $name ($path)", function () use ($name, $path) {
         $response = actingAs($this->user)->get($path);
-        
+
         // These routes are now redirects to Hubs or Login
         $redirectRoutes = [
             'home',
@@ -80,7 +80,7 @@ foreach ($routes as $name => $path) {
             'academic.classes.index',
             'academic.students.index',
             'academic.years.index',
-            'finance.fee-types.index'
+            'finance.fee-types.index',
         ];
 
         if (in_array($name, $redirectRoutes)) {

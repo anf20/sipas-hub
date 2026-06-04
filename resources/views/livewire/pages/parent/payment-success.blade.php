@@ -2,7 +2,7 @@
     <!-- Success Animation/Icon -->
     <div class="flex flex-col items-center gap-normal animate-in fade-in zoom-in duration-500">
         <div class="w-24 h-24 rounded-full bg-secondary-container/20 flex items-center justify-center">
-            <span class="material-symbols-outlined text-secondary text-[64px]">check_circle</span>
+            <flux:icon.check-circle variant="solid" class="text-secondary size-16" />
         </div>
         <div class="text-center space-y-2">
             <h2 class="font-headline-md text-3xl font-bold text-primary">{{ __('Pembayaran Berhasil!') }}</h2>
@@ -51,7 +51,7 @@
             variant="primary" 
             class="w-full !rounded-2xl !py-4 shadow-lg flex justify-center items-center gap-2"
         >
-            <span class="material-symbols-outlined">receipt_long</span>
+            <flux:icon.document-text variant="outline" class="size-5" />
             {{ __('Download Kwitansi (PDF)') }}
         </flux:button>
         

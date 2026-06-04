@@ -17,9 +17,10 @@ class StudentSeeder extends Seeder
     {
         // 1. Ambil tepat 3 kelas yang sudah dibuat di SchoolFoundationSeeder
         $classes = SchoolClass::orderBy('grade')->take(3)->get();
-        
+
         if ($classes->count() < 3) {
             $this->command->error('Pastikan SchoolFoundationSeeder sudah membuat 3 kelas.');
+
             return;
         }
 
@@ -30,7 +31,7 @@ class StudentSeeder extends Seeder
                 $classPool[] = $class;
             }
         }
-        
+
         // Opsional: shuffle agar tidak berurutan, tapi tetap pasti 10 per kelas
         shuffle($classPool);
 
@@ -55,12 +56,12 @@ class StudentSeeder extends Seeder
                 // Buat Siswa sesuai jatah
                 for ($j = 0; $j < $group['students_per_parent']; $j++) {
                     $assignedClass = array_pop($classPool);
-                    
+
                     Student::factory()->create([
                         'parent_user_id' => $parent->id,
                         'school_class_id' => $assignedClass->id,
-                        'entry_year' => $assignedClass->academicYear->start_date 
-                            ? date('Y', strtotime($assignedClass->academicYear->start_date)) 
+                        'entry_year' => $assignedClass->academicYear->start_date
+                            ? date('Y', strtotime($assignedClass->academicYear->start_date))
                             : date('Y'),
                     ]);
                 }

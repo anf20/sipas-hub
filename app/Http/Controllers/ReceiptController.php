@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Models\Payment;
-use Illuminate\Http\Request;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Support\Facades\Auth;
 
@@ -14,8 +13,8 @@ class ReceiptController extends Controller
         // Security: Ensure parent can only download receipts for their students
         $user = Auth::user();
         $studentIds = $user->students->pluck('id')->toArray();
-        
-        if (!in_array($payment->invoice->student_id, $studentIds) && !$user->hasRole('Super Admin')) {
+
+        if (! in_array($payment->invoice->student_id, $studentIds) && ! $user->hasRole('Super Admin')) {
             abort(403);
         }
 
@@ -28,10 +27,10 @@ class ReceiptController extends Controller
         ];
 
         $pdf = Pdf::loadView('reports.receipt', $data);
-        
+
         // Set paper size for receipt (e.g., A5 or half A4)
         $pdf->setPaper('a5', 'landscape');
 
-        return $pdf->stream('kwitansi-' . $payment->receipt_number . '.pdf');
+        return $pdf->stream('kwitansi-'.$payment->receipt_number.'.pdf');
     }
 }

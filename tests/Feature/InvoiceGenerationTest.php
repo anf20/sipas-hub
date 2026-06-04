@@ -1,6 +1,7 @@
 <?php
 
 use App\Jobs\GenerateInvoices;
+use App\Livewire\Pages\Finance\FinanceHub;
 use App\Models\AcademicYear;
 use App\Models\FeeType;
 use App\Models\Invoice;
@@ -11,7 +12,6 @@ use Database\Seeders\RoleSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Queue;
 use Livewire\Livewire;
-use App\Livewire\Pages\Finance\FinanceHub;
 
 uses(RefreshDatabase::class);
 
@@ -87,11 +87,11 @@ it('generates invoices for all active students', function () {
 it('does not generate duplicate invoices', function () {
     // Generate once
     $job = new GenerateInvoices(
-        $this->feeType->id, 
-        5, 
-        2025, 
-        '2025-05-10', 
-        ['type' => 'all', 'value' => null], 
+        $this->feeType->id,
+        5,
+        2025,
+        '2025-05-10',
+        ['type' => 'all', 'value' => null],
         $this->user->id
     );
     $job->handle();

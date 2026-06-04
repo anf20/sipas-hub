@@ -5,7 +5,6 @@ namespace App\Livewire\Pages\Admin;
 use App\Models\Invoice;
 use App\Models\Payment;
 use App\Models\Student;
-use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
@@ -16,7 +15,7 @@ class Dashboard extends Component
     public function render()
     {
         $totalStudents = Student::where('status', 'aktif')->count();
-        
+
         $monthlyIncome = Payment::whereMonth('paid_at', now()->month)
             ->whereYear('paid_at', now()->year)
             ->sum('amount');
@@ -46,7 +45,7 @@ class Dashboard extends Component
             $monthKey = $date->format('Y-m');
             $label = $date->translatedFormat('M Y');
             $chartLabels[] = $label;
-            
+
             $data = $incomeData->firstWhere('month', $monthKey);
             $chartData[] = $data ? (float) $data->total : 0;
         }

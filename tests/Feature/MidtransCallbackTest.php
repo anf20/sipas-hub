@@ -4,7 +4,6 @@ use App\Models\Invoice;
 use App\Models\Payment;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Config;
-use Illuminate\Support\Facades\Log;
 
 uses(RefreshDatabase::class);
 
@@ -15,15 +14,15 @@ beforeEach(function () {
 test('it handles successful midtrans callback', function () {
     $invoice = Invoice::factory()->create([
         'amount' => 100000,
-        'status' => 'unpaid'
+        'status' => 'unpaid',
     ]);
 
-    $orderId = 'INV-' . $invoice->id . '-' . time();
+    $orderId = 'INV-'.$invoice->id.'-'.time();
     $statusCode = '200';
     $grossAmount = '100000.00';
     $serverKey = 'test-server-key';
-    
-    $signatureKey = hash("sha512", $orderId . $statusCode . $grossAmount . $serverKey);
+
+    $signatureKey = hash('sha512', $orderId.$statusCode.$grossAmount.$serverKey);
 
     $payload = [
         'order_id' => $orderId,
@@ -51,11 +50,11 @@ test('it handles successful midtrans callback', function () {
 test('it rejects invalid signature', function () {
     $invoice = Invoice::factory()->create([
         'amount' => 100000,
-        'status' => 'unpaid'
+        'status' => 'unpaid',
     ]);
 
     $payload = [
-        'order_id' => 'INV-' . $invoice->id . '-12345',
+        'order_id' => 'INV-'.$invoice->id.'-12345',
         'status_code' => '200',
         'gross_amount' => '100000.00',
         'signature_key' => 'wrong-signature',
@@ -74,15 +73,15 @@ test('it rejects invalid signature', function () {
 test('it handles failed transaction status', function () {
     $invoice = Invoice::factory()->create([
         'amount' => 100000,
-        'status' => 'unpaid'
+        'status' => 'unpaid',
     ]);
 
-    $orderId = 'INV-' . $invoice->id . '-' . time();
+    $orderId = 'INV-'.$invoice->id.'-'.time();
     $statusCode = '200';
     $grossAmount = '100000.00';
     $serverKey = 'test-server-key';
-    
-    $signatureKey = hash("sha512", $orderId . $statusCode . $grossAmount . $serverKey);
+
+    $signatureKey = hash('sha512', $orderId.$statusCode.$grossAmount.$serverKey);
 
     $payload = [
         'order_id' => $orderId,
@@ -98,6 +97,6 @@ test('it handles failed transaction status', function () {
 
     $invoice->refresh();
     expect($invoice->status)->toBe('unpaid');
-    
+
     expect(Payment::where('invoice_id', $invoice->id)->exists())->toBeFalse();
 });
