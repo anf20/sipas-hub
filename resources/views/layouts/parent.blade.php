@@ -76,8 +76,16 @@
         </div>
     </header>
 
-    <main class="w-full max-w-[600px] px-normal py-large flex flex-col gap-large mb-24">
+    <main class="w-full max-w-[600px] px-normal py-large flex flex-col gap-large mb-8">
         {{ $slot }}
+
+        <!-- Global Help Link -->
+        <div class="flex justify-center pb-24 mt-4">
+            <flux:button variant="ghost" size="sm" :href="route('parent.help')" wire:navigate class="!text-xs text-zinc-500 hover:text-zinc-700">
+                <flux:icon.question-mark-circle variant="outline" class="mr-2 size-4" />
+                {{ __('Butuh bantuan menggunakan aplikasi?') }}
+            </flux:button>
+        </div>
     </main>
 
     <!-- BottomNavBar -->

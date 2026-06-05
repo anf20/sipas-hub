@@ -18,7 +18,7 @@
                 <flux:icon.credit-card variant="outline" class="mr-2 size-5" />
                 {{ __('Bayar') }}
             </flux:button>
-            <flux:button :href="route('parent.invoices')" variant="ghost" class="w-1/2 justify-center border border-white/30 text-white hover:bg-white/10 h-[52px]" wire:navigate>
+            <flux:button :href="route('parent.invoices')" class="w-1/2 justify-center bg-white/20 text-white border-none hover:bg-white/30 h-[52px]" wire:navigate>
                 {{ __('Detail') }}
             </flux:button>
         </div>
@@ -99,17 +99,5 @@
                 </div>
             @endforelse
         </div>
-    </section>
-
-    <!-- Secondary Info Section -->
-    <section class="bg-secondary-container/10 border border-secondary/20 p-normal rounded-xl flex items-center gap-normal mx-1 shadow-sm">
-        <div class="w-10 h-10 rounded-full bg-secondary-container/30 flex items-center justify-center flex-shrink-0">
-            <flux:icon.information-circle variant="outline" class="text-secondary size-5" />
-        </div>
-        <div class="flex flex-col flex-1">
-            <span class="font-label-bold text-sm font-semibold text-on-secondary-container">{{ __('Otomatisasi pembayaran Anda') }}</span>
-            <span class="font-caption text-xs text-on-secondary-container/80">{{ __('Gunakan metode pembayaran otomatis agar tidak terlewat.') }}</span>
-        </div>
-        <flux:icon.chevron-right variant="outline" class="text-secondary size-5" />
     </section>
 </div>

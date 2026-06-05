@@ -72,10 +72,13 @@
             </div>
         @endforelse
 
-        <!-- Info Box -->
-        <div class="mt-smallall p-normal bg-surface-container-high/50 rounded-2xl flex gap-normal items-start">
+        <!-- Info Box (Link to Help) -->
+        <a href="{{ route('parent.help') }}" wire:navigate class="mt-smallall p-normal bg-surface-container-high/50 rounded-2xl flex gap-normal items-start active:bg-surface-container-high transition-colors">
             <flux:icon.question-mark-circle variant="outline" class="text-on-surface-variant size-5" />
-            <p class="font-caption text-xs text-on-surface-variant mt-xs leading-relaxed">{{ __('Jika Anda tidak melihat salah satu anak Anda terdaftar, silakan hubungi kantor administrasi sekolah untuk memverifikasi alamat email Anda.') }}</p>
-        </div>
+            <div class="flex-1">
+                <p class="font-caption text-xs text-on-surface-variant mt-xs leading-relaxed">{{ __('Jika Anda tidak melihat salah satu anak Anda terdaftar atau butuh bantuan lainnya, klik di sini untuk bantuan.') }}</p>
+            </div>
+            <flux:icon.chevron-right variant="outline" class="size-4 text-zinc-400 self-center" />
+        </a>
     </div>
 </div>

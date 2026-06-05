@@ -2,13 +2,14 @@
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}" class="light">
     <head>
         @include('partials.head')
+        <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"/>
     </head>
-    <body class="min-h-screen bg-background antialiased">
+    <body class="min-h-screen bg-background text-on-background font-body-md antialiased">
         <div class="flex min-h-svh flex-col items-center justify-center gap-6 p-4 md:p-10">
             <div class="flex w-full max-w-lg flex-col gap-6">
                 <a href="{{ route('home') }}" class="flex flex-col items-center gap-2 font-medium" wire:navigate>
                     <span class="flex h-16 w-16 items-center justify-center rounded-2xl bg-primary text-white shadow-xl mb-2">
-                        <x-app-logo-icon class="size-10 fill-current" />
+                        <x-app-logo-icon class="size-10 text-white" />
                     </span>
                     <span class="text-3xl font-bold text-primary tracking-tight">SIPAS-Hub</span>
                     <span class="sr-only">{{ config('app.name', 'Laravel') }}</span>

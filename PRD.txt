@@ -272,3 +272,21 @@ Provider
 * Keamanan: Enkripsi bcrypt, proteksi CSRF/XSS, role isolation
 * Skalabilitas: Up to 5.000 siswa aktif
 SIPAS-Hub v1.0 | Mei 2025
+
+11. Log Progres & Pencapaian (Changelog)
+----------------------------------------
+[Kamis, 4 Juni 2026]
+Fitur & Optimasi yang Telah Diselesaikan:
+1. Keamanan Data (Soft Delete): Implementasi soft delete pada data keuangan (Invoice & Payment) untuk menjaga integritas audit historis.
+2. Pusat Pemulihan Data (Recovery Center): Antarmuka khusus Super Admin untuk me-restore atau menghapus permanen data yang telah di-soft-delete (Siswa, Tagihan, Pembayaran).
+3. Pembayaran Massal (Bulk Payment): Orang tua kini dapat memilih dan membayar beberapa tagihan sekaligus dalam satu transaksi Midtrans.
+4. Biaya Layanan Dinamis (Customer Absorb): Penyesuaian fee otomatis berdasarkan metode yang dipilih (Flat Rp4.500 untuk VA, 0.7% untuk QRIS, 1.5% untuk Dana).
+5. Pembatasan Metode Pembayaran: Mengunci opsi Midtrans hanya pada QRIS, VA BCA, VA BRI, VA Mandiri, dan Dana.
+6. Pusat Bantuan (Q&A): Penambahan halaman bantuan interaktif (Alpine.js) di Portal Orang Tua dengan tautan global di footer.
+7. Konsistensi UI/UX: Sinkronisasi rona background, font (Lexend & Inter), dan ikon (Flux UI SVG) di seluruh portal orang tua dan halaman login.
+8. Keputusan Teknis Autentikasi: Menonaktifkan kewajiban verifikasi email (MustVerifyEmail) untuk mempermudah login orang tua, karena pembuatan akun bersifat tersentralisasi.
+
+Persiapan Deployment VPS (Terjadwal: Besok Malam):
+- Target Server: VPS (min 2GB RAM), Ubuntu 22.04 / 24.04.
+- Control Panel: CloudPanel (Gratis & Mudah digunakan).
+- Tahapan Utama: Pull branch dari GitHub, Instalasi dependensi (PHP 8.4 & Node.js/Vite), Konfigurasi .env (Database & SMTP), dan penyesuaian Webhook Midtrans (Production URL).
