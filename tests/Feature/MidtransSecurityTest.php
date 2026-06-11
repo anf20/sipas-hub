@@ -57,7 +57,7 @@ class MidtransSecurityTest extends TestCase
         $payload = [
             'order_id' => 'INV-'.$this->invoice->id.'-123',
             'status_code' => '200',
-            'gross_amount' => '100000.00',
+            'gross_amount' => '104500.00',
             'transaction_status' => 'settlement',
             'signature_key' => 'palsu-banget-signatures-nya',
         ];
@@ -96,17 +96,18 @@ class MidtransSecurityTest extends TestCase
     {
         $orderId = 'INV-'.$this->invoice->id.'-123';
         $statusCode = '200';
-        $amount = '100000.00';
+        $amountWithFee = '104500.00';
 
-        $signature = hash('sha512', $orderId.$statusCode.$amount.$this->serverKey);
+        $signature = hash('sha512', $orderId.$statusCode.$amountWithFee.$this->serverKey);
 
         $payload = [
             'order_id' => $orderId,
             'status_code' => $statusCode,
-            'gross_amount' => $amount,
+            'gross_amount' => $amountWithFee,
             'transaction_status' => 'settlement',
             'payment_type' => 'bank_transfer',
             'signature_key' => $signature,
+            'custom_field1' => (string) $this->invoice->id,
         ];
 
         $response = $this->postJson('/midtrans/callback', $payload);

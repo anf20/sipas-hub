@@ -27,10 +27,15 @@ class Dashboard extends Component
             ->whereYear('created_at', now()->year)
             ->sum('amount');
 
-        // Income trend for the last 12 months (SQLite compatible)
+        // Income trend for the last 12 months (SQLite & MySQL compatible)
+        $driver = DB::connection()->getDriverName();
+        $monthSelector = $driver === 'sqlite'
+            ? "strftime('%Y-%m', paid_at)"
+            : "DATE_FORMAT(paid_at, '%Y-%m')";
+
         $incomeData = Payment::select(
             DB::raw('sum(amount) as total'),
-            DB::raw("strftime('%Y-%m', paid_at) as month")
+            DB::raw("{$monthSelector} as month")
         )
             ->where('paid_at', '>=', now()->subMonths(11)->startOfMonth())
             ->groupBy('month')

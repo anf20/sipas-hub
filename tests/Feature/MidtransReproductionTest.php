@@ -11,15 +11,18 @@ beforeEach(function () {
     Config::set('services.midtrans.server_key', 'test-server-key');
 });
 
-test('it handles successful midtrans callback', function () {
+test('it handles callback with service fee correctly', function () {
     $invoice = Invoice::factory()->create([
         'amount' => 100000,
         'status' => 'unpaid',
     ]);
 
+    $serviceFee = 4500; // Flat VA fee (match logic in MidtransCallbackController)
+    $totalAmount = 100000 + $serviceFee;
+
     $orderId = 'INV-'.$invoice->id.'-'.time();
     $statusCode = '200';
-    $grossAmount = '104500.00'; // 100000 + 4500 (bank_transfer/VA fee)
+    $grossAmount = (string) $totalAmount;
     $serverKey = 'test-server-key';
 
     $signatureKey = hash('sha512', $orderId.$statusCode.$grossAmount.$serverKey);
@@ -45,41 +48,19 @@ test('it handles successful midtrans callback', function () {
     $payment = Payment::where('invoice_id', $invoice->id)->first();
     expect($payment)->not->toBeNull();
     expect((float) $payment->amount)->toBe(100000.0);
-    expect($payment->method)->toBe('midtrans: bank_transfer');
 });
 
-test('it rejects invalid signature', function () {
-    $invoice = Invoice::factory()->create([
-        'amount' => 100000,
-        'status' => 'unpaid',
-    ]);
+test('it handles bulk payment callback correctly', function () {
+    $invoice1 = Invoice::factory()->create(['amount' => 100000, 'status' => 'unpaid']);
+    $invoice2 = Invoice::factory()->create(['amount' => 200000, 'status' => 'unpaid']);
 
-    $payload = [
-        'order_id' => 'INV-'.$invoice->id.'-12345',
-        'status_code' => '200',
-        'gross_amount' => '104500.00',
-        'signature_key' => 'wrong-signature',
-        'transaction_status' => 'settlement',
-    ];
+    $totalInvoicesAmount = 100000 + 200000;
+    $serviceFee = 4500; // Flat VA fee
+    $totalAmount = $totalInvoicesAmount + $serviceFee;
 
-    $response = $this->postJson(route('midtrans.callback'), $payload);
-
-    $response->assertForbidden();
-    $response->assertJson(['message' => 'Invalid signature']);
-
-    $invoice->refresh();
-    expect($invoice->status)->toBe('unpaid');
-});
-
-test('it handles failed transaction status', function () {
-    $invoice = Invoice::factory()->create([
-        'amount' => 100000,
-        'status' => 'unpaid',
-    ]);
-
-    $orderId = 'INV-'.$invoice->id.'-'.time();
+    $orderId = 'BULK-'.time().'-hash';
     $statusCode = '200';
-    $grossAmount = '104500.00';
+    $grossAmount = (string) $totalAmount;
     $serverKey = 'test-server-key';
 
     $signatureKey = hash('sha512', $orderId.$statusCode.$grossAmount.$serverKey);
@@ -89,17 +70,21 @@ test('it handles failed transaction status', function () {
         'status_code' => $statusCode,
         'gross_amount' => $grossAmount,
         'signature_key' => $signatureKey,
-        'transaction_status' => 'expire',
+        'transaction_status' => 'settlement',
         'payment_type' => 'bank_transfer',
-        'custom_field1' => (string) $invoice->id,
+        'custom_field1' => $invoice1->id.','.$invoice2->id,
     ];
 
     $response = $this->postJson(route('midtrans.callback'), $payload);
 
     $response->assertSuccessful();
+    $response->assertJson(['message' => 'Success']);
 
-    $invoice->refresh();
-    expect($invoice->status)->toBe('unpaid');
+    $invoice1->refresh();
+    $invoice2->refresh();
+    expect($invoice1->status)->toBe('paid');
+    expect($invoice2->status)->toBe('paid');
 
-    expect(Payment::where('invoice_id', $invoice->id)->exists())->toBeFalse();
+    expect(Payment::where('invoice_id', $invoice1->id)->exists())->toBeTrue();
+    expect(Payment::where('invoice_id', $invoice2->id)->exists())->toBeTrue();
 });

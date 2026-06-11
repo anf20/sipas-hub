@@ -57,6 +57,7 @@ class MidtransService
                 ],
             ],
             'enabled_payments' => [$method],
+            'custom_field1' => (string) $invoice->id,
         ];
 
         return Snap::getSnapToken($params);
@@ -103,6 +104,7 @@ class MidtransService
             ],
             'item_details' => $itemDetails,
             'enabled_payments' => [$method],
+            'custom_field1' => implode(',', $invoiceIds),
         ];
 
         return Snap::getSnapToken($params);
