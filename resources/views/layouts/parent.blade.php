@@ -6,7 +6,7 @@
     <script type="text/javascript"
             src="{{ config('services.midtrans.is_production') ? 'https://app.midtrans.com/snap/snap.js' : 'https://app.sandbox.midtrans.com/snap/snap.js' }}"
             data-client-key="{{ config('services.midtrans.client_key') }}"
-            data-navigate-track></script>
+            data-navigate-once></script>
     <style>
         .hide-scrollbar::-webkit-scrollbar {
             display: none;
