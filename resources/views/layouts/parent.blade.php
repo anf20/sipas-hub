@@ -3,10 +3,6 @@
 <head>
     @include('partials.head')
     <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"/>
-    <script type="text/javascript"
-            src="{{ config('services.midtrans.is_production') ? 'https://app.midtrans.com/snap/snap.js' : 'https://app.sandbox.midtrans.com/snap/snap.js' }}"
-            data-client-key="{{ config('services.midtrans.client_key') }}"
-            data-navigate-once></script>
     <style>
         .hide-scrollbar::-webkit-scrollbar {
             display: none;
@@ -130,7 +126,6 @@
                 } else if (Array.isArray(data) && data[0] && data[0].snapToken) {
                     snapToken = data[0].snapToken;
                 } else if (data && typeof data === 'object' && Object.keys(data).length > 0) {
-                    // Try to find snapToken in any key if nested
                     snapToken = data.snapToken || Object.values(data)[0]?.snapToken;
                 }
 
@@ -142,29 +137,48 @@
                     return;
                 }
 
-                if (typeof window.snap === 'undefined') {
-                    console.error('Midtrans Snap.js is not loaded.');
-                    alert('Sistem pembayaran sedang tidak tersedia. Silakan muat ulang halaman.');
-                    return;
+                const midtransUrl = "{{ config('services.midtrans.is_production') ? 'https://app.midtrans.com/snap/snap.js' : 'https://app.sandbox.midtrans.com/snap/snap.js' }}";
+                const clientKey = "{{ config('services.midtrans.client_key') }}";
+
+                // Function to trigger payment
+                const triggerPayment = () => {
+                    window.snap.pay(snapToken, {
+                        onSuccess: function(result) {
+                            console.log('Payment Success:', result);
+                            window.location.href = '/parent/history';
+                        },
+                        onPending: function(result) {
+                            console.log('Payment Pending:', result);
+                            window.location.reload();
+                        },
+                        onError: function(result) {
+                            console.error('Payment Error:', result);
+                            alert('Terjadi kesalahan saat memproses pembayaran.');
+                        },
+                        onClose: function() {
+                            console.log('User closed Midtrans popup');
+                        }
+                    });
+                };
+
+                // CRITICAL SPA FIX: If window.snap exists but the iframe is gone (due to wire:navigate),
+                // we MUST re-load the script to re-initialize the iframe context.
+                if (window.snap && !document.getElementById('snap-midtrans')) {
+                    console.log('Midtrans iframe missing (SPA navigation detected). Re-initializing...');
+                    delete window.snap;
+                    document.querySelectorAll('script[src*="snap.js"]').forEach(el => el.remove());
                 }
 
-                window.snap.pay(snapToken, {
-                    onSuccess: function(result) {
-                        console.log('Payment Success:', result);
-                        window.location.href = '/parent/history';
-                    },
-                    onPending: function(result) {
-                        console.log('Payment Pending:', result);
-                        window.location.reload();
-                    },
-                    onError: function(result) {
-                        console.error('Payment Error:', result);
-                        alert('Terjadi kesalahan saat memproses pembayaran.');
-                    },
-                    onClose: function() {
-                        console.log('User closed Midtrans popup');
-                    }
-                });
+                if (typeof window.snap === 'undefined') {
+                    console.log('Loading Midtrans Snap.js dynamically...');
+                    const script = document.createElement('script');
+                    script.src = midtransUrl;
+                    script.setAttribute('data-client-key', clientKey);
+                    script.onload = triggerPayment;
+                    document.head.appendChild(script);
+                } else {
+                    triggerPayment();
+                }
             });
         });
     </script>
