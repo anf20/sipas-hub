@@ -107,6 +107,17 @@ select:focus[data-flux-control] {
     @apply outline-hidden ring-2 ring-accent ring-offset-2 ring-offset-accent-foreground;
 }
 
+/* Fix for table columns being too close to the left/right edges */
+table th:first-child,
+table td:first-child {
+    padding-left: 1rem !important; /* px-4 equivalent */
+}
+
+table th:last-child,
+table td:last-child {
+    padding-right: 1rem !important; /* px-4 equivalent */
+}
+
 /* \[:where(&)\]:size-4 {
     @apply size-4;
 } */
