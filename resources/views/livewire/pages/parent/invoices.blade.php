@@ -31,6 +31,40 @@
         </button>
     </nav>
 
+    <!-- Quick Summary Section (Moved to Top) -->
+    @if($totalUnpaidBalance > 0)
+        <div class="bg-primary-container text-on-primary-container rounded-2xl p-large flex flex-col gap-normal shadow-xl sticky top-[76px] z-40 mx-1 mb-6 border border-white/10">
+            <div class="flex justify-between items-start px-1">
+                <div>
+                    @if($isSelectMode)
+                        <p class="font-label-bold text-xs font-semibold opacity-80 uppercase tracking-wider text-on-primary-container">{{ __('Total Terpilih (:count)', ['count' => count($selectedInvoices)]) }}</p>
+                        <h4 class="font-display-lg text-2xl font-semibold text-white mt-1">Rp {{ number_format($invoicesTotal, 0, ',', '.') }}</h4>
+                    @else
+                        <p class="font-label-bold text-xs font-semibold opacity-80 uppercase tracking-wider text-on-primary-container">{{ __('Total Belum Dibayar') }}</p>
+                        <h4 class="font-display-lg text-2xl font-semibold text-white mt-1">Rp {{ number_format($totalUnpaidBalance, 0, ',', '.') }}</h4>
+                    @endif
+                </div>
+                <div class="bg-white/10 p-2.5 rounded-xl text-white">
+                    <flux:icon.credit-card variant="outline" class="size-6" />
+                </div>
+            </div>
+
+            @if($isSelectMode)
+                <flux:button 
+                    wire:click="initiatePayment" 
+                    variant="primary" 
+                    icon="banknotes"
+                    class="w-full !bg-secondary !text-white border-none mt-2 h-[52px] !rounded-xl"
+                    :disabled="empty($selectedInvoices)"
+                >
+                    {{ __('Bayar Sekarang') }}
+                </flux:button>
+            @else
+                <p class="text-[10px] text-white/70 italic px-1">{{ __('* Silakan klik pada kartu tagihan di atas untuk melihat detail dan melakukan pembayaran.') }}</p>
+            @endif
+        </div>
+    @endif
+
     <!-- Grouped Invoices -->
     <div class="flex flex-col gap-large">
         @forelse($groupedInvoices as $studentName => $studentInvoices)
@@ -120,40 +154,6 @@
             </div>
         @endif
     </div>
-
-    <!-- Quick Summary Section -->
-    @if($totalUnpaidBalance > 0)
-        <div class="bg-primary-container text-on-primary-container rounded-2xl p-large flex flex-col gap-normal shadow-xl sticky bottom-24 z-40 mx-1 border border-white/10">
-            <div class="flex justify-between items-start px-1">
-                <div>
-                    @if($isSelectMode)
-                        <p class="font-label-bold text-xs font-semibold opacity-80 uppercase tracking-wider text-on-primary-container">{{ __('Total Terpilih (:count)', ['count' => count($selectedInvoices)]) }}</p>
-                        <h4 class="font-display-lg text-2xl font-semibold text-white mt-1">Rp {{ number_format($invoicesTotal, 0, ',', '.') }}</h4>
-                    @else
-                        <p class="font-label-bold text-xs font-semibold opacity-80 uppercase tracking-wider text-on-primary-container">{{ __('Total Belum Dibayar') }}</p>
-                        <h4 class="font-display-lg text-2xl font-semibold text-white mt-1">Rp {{ number_format($totalUnpaidBalance, 0, ',', '.') }}</h4>
-                    @endif
-                </div>
-                <div class="bg-white/10 p-2.5 rounded-xl text-white">
-                    <flux:icon.credit-card variant="outline" class="size-6" />
-                </div>
-            </div>
-
-            @if($isSelectMode)
-                <flux:button 
-                    wire:click="initiatePayment" 
-                    variant="primary" 
-                    icon="banknotes"
-                    class="w-full !bg-secondary !text-white border-none mt-2 h-[52px] !rounded-xl"
-                    :disabled="empty($selectedInvoices)"
-                >
-                    {{ __('Bayar Sekarang') }}
-                </flux:button>
-            @else
-                <p class="text-[10px] text-white/70 italic px-1">{{ __('* Silakan klik pada kartu tagihan di atas untuk melihat detail dan melakukan pembayaran.') }}</p>
-            @endif
-        </div>
-    @endif
 
     <!-- Confirmation Modal (Invoice Summary) -->
     <flux:modal wire:model="showConfirmationModal" class="min-w-[350px] max-w-[500px]">
