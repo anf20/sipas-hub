@@ -193,3 +193,57 @@ Berikut adalah daftar masalah yang dialami selama proses deployment ini beserta 
 *   **Solusi**:
     1.  Masuk ke dashboard panel IDCloudHost VPS Anda, buka tab **Firewall**, tambahkan **Inbound Rules** baru untuk mengizinkan port **80** (HTTP), **443** (HTTPS), **22** (SSH), dan **8443** (CloudPanel) untuk semua IP (`0.0.0.0/0`).
     2.  Uji status DNS menggunakan public resolver Google (jalankan `nslookup sipashub.my.id 8.8.8.8` di CMD lokal). Jika Google DNS mendeteksi IP VPS Anda, berarti setup sudah benar, Anda hanya perlu menunggu proses propagasi DNS lokal ISP Anda (5-15 menit) atau mencobanya menggunakan paket data seluler HP.
+
+### Q12: Mengapa muncul error `502 Bad Gateway` setelah mengunggah atau merubah konfigurasi Nginx?
+*   **Penyebab**: Nginx utama (port 80/443) mencoba mem-proxy lalu lintas ke Varnish Cache (`http://127.0.0.1:8081`), namun service Varnish sedang mati atau dinonaktifkan di CloudPanel. Selain itu, ada risiko variabel Nginx seperti `$uri` terhapus/berkurang argumennya jika disalin langsung via GUI editor CloudPanel yang menginterpretasikan tanda `$` sebagai variabel template internal.
+*   **Solusi**:
+    1.  Jika Varnish tidak digunakan, ubah port proxy utama di file virtual host Nginx dari port `8081` (Varnish) ke port `8080` (Nginx Backend PHP-FPM):
+        ```nginx
+        location / {
+          proxy_pass http://127.0.0.1:8080;
+          ...
+        }
+        ```
+    2.  Untuk melakukan perubahan dengan aman tanpa merusak struktur sintaksis (mencegah error `invalid number of arguments` karena karakter spasi aneh atau tanda `$` yang hilang), jalankan perintah `sed` otomatis berikut di VPS:
+        ```bash
+        sed -i 's/proxy_pass http:\/\/127.0.0.1:8081;/proxy_pass http:\/\/127.0.0.1:8080;/g' /etc/nginx/sites-enabled/www.sipashub.my.id.conf
+        ```
+    3.  Lakukan pengetesan sintaksis dan muat ulang Nginx:
+        ```bash
+        nginx -t
+        systemctl reload nginx
+        ```
+
+### Q13: Mengapa tombol UI tidak merespons (tidak bisa diklik), dan muncul error `flux.min.js 404 (Not Found)` serta `fluxModal is not defined` di console browser?
+*   **Penyebab**: Livewire Flux UI menyajikan file aset JS/CSS secara dinamis via route internal Laravel (`/flux/flux.min.js`). Namun, aturan penanganan static files umum pada Nginx (`location ~* ^.+\.(css|js|...)`) menangkap request tersebut dan memaksanya mencari file fisik di disk public. Karena file tidak ada secara fisik, Nginx mengembalikan error 404, sehingga fungsi JS / modal Alpine.js gagal dimuat.
+*   **Solusi**: Tambahkan konfigurasi `location` khusus untuk `/flux/` **sebelum** blok static files umum pada file virtual host Nginx (`/etc/nginx/sites-enabled/www.sipashub.my.id.conf`):
+
+    1.  Pada server block utama **port 80/443** (di atas block static files):
+        ```nginx
+        location ~* ^/flux/(flux|editor)(\.min)?\.(js|css)$ {
+          expires off;
+          proxy_pass http://127.0.0.1:8080;
+          proxy_set_header Host $host;
+          proxy_set_header X-Forwarded-Host $host;
+          proxy_set_header X-Real-IP $remote_addr;
+          proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+          proxy_set_header X-Forwarded-Proto $scheme;
+          proxy_set_header X-Forwarded-Port $server_port;
+          proxy_hide_header X-Varnish;
+          proxy_redirect off;
+        }
+        ```
+
+    2.  Pada server block backend **port 8080** (di atas block static files):
+        ```nginx
+        location ~* ^/flux/(flux|editor)(\.min)?\.(js|css)$ {
+          expires off;
+          try_files $uri $uri/ /index.php?$query_string;
+        }
+        ```
+
+    3.  Jalankan pengetesan sintaksis dan muat ulang Nginx:
+        ```bash
+        nginx -t
+        systemctl reload nginx
+        ```

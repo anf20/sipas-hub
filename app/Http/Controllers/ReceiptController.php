@@ -28,8 +28,8 @@ class ReceiptController extends Controller
 
         $pdf = Pdf::loadView('reports.receipt', $data);
 
-        // Set paper size for receipt (e.g., A5 or half A4)
-        $pdf->setPaper('a5', 'landscape');
+        // Set paper size for receipt (A4 Portrait)
+        $pdf->setPaper('a4', 'portrait');
 
         return $pdf->stream('kwitansi-'.$payment->receipt_number.'.pdf');
     }
