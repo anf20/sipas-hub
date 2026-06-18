@@ -70,9 +70,9 @@
                 <flux:button 
                     wire:click="initiatePayment" 
                     variant="primary" 
+                    icon="banknotes"
                     class="w-full !rounded-2xl !py-4 shadow-lg active:scale-[0.98] transition-all"
                 >
-                    <flux:icon.banknotes variant="outline" class="mr-2 size-5" />
                     {{ __('Bayar Sekarang') }}
                 </flux:button>
             </div>
@@ -166,7 +166,7 @@
 
             <div class="flex gap-3">
                 <flux:button class="flex-1" variant="ghost" wire:click="$set('showConfirmationModal', false)">{{ __('Batal') }}</flux:button>
-                <flux:button class="flex-1" variant="primary" wire:click="pay">{{ __('Bayar Sekarang') }}</flux:button>
+                <flux:button class="flex-1" variant="primary" icon="banknotes" wire:click="pay">{{ __('Bayar Sekarang') }}</flux:button>
             </div>
         </div>
     </flux:modal>

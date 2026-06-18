@@ -123,7 +123,7 @@
 
     <!-- Quick Summary Section -->
     @if($totalUnpaidBalance > 0)
-        <div class="bg-primary-container text-on-primary-container rounded-2xl p-large flex flex-col gap-normal shadow-xl sticky bottom-2 z-10 mx-1 border border-white/10">
+        <div class="bg-primary-container text-on-primary-container rounded-2xl p-large flex flex-col gap-normal shadow-xl sticky bottom-[80px] z-40 mx-1 border border-white/10">
             <div class="flex justify-between items-start px-1">
                 <div>
                     @if($isSelectMode)
@@ -143,6 +143,7 @@
                 <flux:button 
                     wire:click="initiatePayment" 
                     variant="primary" 
+                    icon="banknotes"
                     class="w-full !bg-secondary !text-white border-none mt-2 h-[52px] !rounded-xl"
                     :disabled="empty($selectedInvoices)"
                 >
@@ -198,7 +199,7 @@
 
             <div class="flex gap-3">
                 <flux:button class="flex-1" variant="ghost" wire:click="$set('showConfirmationModal', false)">{{ __('Batal') }}</flux:button>
-                <flux:button class="flex-1" variant="primary" wire:click="paySelected">{{ __('Bayar Sekarang') }}</flux:button>
+                <flux:button class="flex-1" variant="primary" icon="banknotes" wire:click="paySelected">{{ __('Bayar Sekarang') }}</flux:button>
             </div>
         </div>
     </flux:modal>
