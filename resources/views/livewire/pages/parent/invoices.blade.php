@@ -123,7 +123,7 @@
 
     <!-- Quick Summary Section -->
     @if($totalUnpaidBalance > 0)
-        <div class="bg-primary-container text-on-primary-container rounded-2xl p-large flex flex-col gap-normal shadow-xl sticky bottom-[80px] z-40 mx-1 border border-white/10">
+        <div class="bg-primary-container text-on-primary-container rounded-2xl p-large flex flex-col gap-normal shadow-xl sticky bottom-24 z-40 mx-1 border border-white/10">
             <div class="flex justify-between items-start px-1">
                 <div>
                     @if($isSelectMode)
