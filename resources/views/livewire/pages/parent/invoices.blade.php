@@ -9,31 +9,9 @@
         </div>
     </section>
 
-    <!-- Category Filters -->
-    <nav class="flex gap-2 overflow-x-auto hide-scrollbar py-1 -mx-md px-normal">
-        <button 
-            wire:click="setFilter('all')"
-            class="{{ $filter === 'all' ? 'bg-primary-container text-on-primary-container shadow-sm' : 'bg-surface-container text-on-surface-variant hover:bg-surface-container-high' }} px-large py-2.5 rounded-xl font-label-bold text-xs font-semibold transition-all active:scale-95 whitespace-nowrap"
-        >
-            {{ __('Semua') }}
-        </button>
-        <button 
-            wire:click="setFilter('unpaid')"
-            class="{{ $filter === 'unpaid' ? 'bg-primary-container text-on-primary-container shadow-sm' : 'bg-surface-container text-on-surface-variant hover:bg-surface-container-high' }} px-large py-2.5 rounded-xl font-label-bold text-xs font-semibold transition-all active:scale-95 whitespace-nowrap"
-        >
-            {{ __('Belum Bayar') }}
-        </button>
-        <button 
-            wire:click="setFilter('paid')"
-            class="{{ $filter === 'paid' ? 'bg-primary-container text-on-primary-container shadow-sm' : 'bg-surface-container text-on-surface-variant hover:bg-surface-container-high' }} px-large py-2.5 rounded-xl font-label-bold text-xs font-semibold transition-all active:scale-95 whitespace-nowrap"
-        >
-            {{ __('Sudah Bayar') }}
-        </button>
-    </nav>
-
-    <!-- Quick Summary Section (Moved to Top) -->
+    <!-- Quick Summary Section (Highest Priority) -->
     @if($totalUnpaidBalance > 0)
-        <div class="bg-primary-container text-on-primary-container rounded-2xl p-large flex flex-col gap-normal shadow-xl sticky top-[76px] z-40 mx-1 mb-6 border border-white/10">
+        <div class="bg-primary-container text-on-primary-container rounded-2xl p-large flex flex-col gap-normal shadow-xl sticky top-[76px] z-40 mx-1 mb-2 border border-white/10">
             <div class="flex justify-between items-start px-1">
                 <div>
                     @if($isSelectMode)
@@ -65,8 +43,46 @@
         </div>
     @endif
 
+    <!-- Category Filters & Mass Action -->
+    <nav class="flex gap-2 overflow-x-auto hide-scrollbar py-1 -mx-md px-normal -mt-4">
+        <button 
+            wire:click="setFilter('all')"
+            class="{{ $filter === 'all' ? 'bg-primary-container text-on-primary-container shadow-sm' : 'bg-surface-container text-on-surface-variant hover:bg-surface-container-high' }} px-large py-2.5 rounded-xl font-label-bold text-xs font-semibold transition-all active:scale-95 whitespace-nowrap"
+        >
+            {{ __('Semua') }}
+        </button>
+        <button 
+            wire:click="setFilter('unpaid')"
+            class="{{ $filter === 'unpaid' ? 'bg-primary-container text-on-primary-container shadow-sm' : 'bg-surface-container text-on-surface-variant hover:bg-surface-container-high' }} px-large py-2.5 rounded-xl font-label-bold text-xs font-semibold transition-all active:scale-95 whitespace-nowrap"
+        >
+            {{ __('Belum Bayar') }}
+        </button>
+        <button 
+            wire:click="setFilter('paid')"
+            class="{{ $filter === 'paid' ? 'bg-primary-container text-on-primary-container shadow-sm' : 'bg-surface-container text-on-surface-variant hover:bg-surface-container-high' }} px-large py-2.5 rounded-xl font-label-bold text-xs font-semibold transition-all active:scale-95 whitespace-nowrap"
+        >
+            {{ __('Sudah Bayar') }}
+        </button>
+
+        @if($unpaidCount > 1 && ($filter === 'all' || $filter === 'unpaid'))
+            <div class="w-px h-6 bg-outline-variant mx-1 self-center shrink-0"></div>
+            <button 
+                wire:click="toggleSelectMode"
+                class="{{ $isSelectMode ? 'bg-error text-on-error' : 'bg-surface-container-high text-primary border border-primary/20' }} px-large py-2.5 rounded-xl font-label-bold text-xs font-semibold transition-all active:scale-95 whitespace-nowrap flex items-center gap-1.5 shrink-0"
+            >
+                @if($isSelectMode)
+                    <flux:icon.x-mark variant="outline" class="size-3.5" />
+                    {{ __('Batal Pilih') }}
+                @else
+                    <flux:icon.check-badge variant="outline" class="size-3.5" />
+                    {{ __('Bayar Massal') }}
+                @endif
+            </button>
+        @endif
+    </nav>
+
     <!-- Grouped Invoices -->
-    <div class="flex flex-col gap-large">
+    <div class="flex flex-col gap-large -mt-4">
         @forelse($groupedInvoices as $studentName => $studentInvoices)
             <div class="flex flex-col gap-normal">
                 <div class="flex items-center gap-2 px-1">
@@ -139,20 +155,6 @@
                 {{ __('Tidak ada tagihan yang ditemukan.') }}
             </div>
         @endforelse
-
-        <!-- Move "Bayar Sekaligus" Button here -->
-        @if($unpaidCount > 1 && ($filter === 'all' || $filter === 'unpaid'))
-            <div class="flex justify-center mt-4">
-                <flux:button 
-                    variant="{{ $isSelectMode ? 'primary' : 'outline' }}" 
-                    wire:click="toggleSelectMode"
-                    class="w-full max-w-xs shadow-sm !rounded-xl h-[48px]"
-                    icon="{{ $isSelectMode ? 'x-mark' : 'check-badge' }}"
-                >
-                    {{ $isSelectMode ? __('Batal Pilih') : __('Pilih Tagihan (Bayar Massal)') }}
-                </flux:button>
-            </div>
-        @endif
     </div>
 
     <!-- Confirmation Modal (Invoice Summary) -->
