@@ -34,5 +34,8 @@ class DatabaseSeeder extends Seeder
 
         // 5. Setup Parents and Students (The specific 30 students / 20 parents requirement)
         $this->call(StudentSeeder::class);
+
+        // 6. Setup Data Historis Keuangan untuk Keperluan Demo
+        $this->call(FinancialDemoSeeder::class);
     }
 }
