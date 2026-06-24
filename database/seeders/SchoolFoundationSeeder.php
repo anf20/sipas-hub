@@ -40,31 +40,45 @@ class SchoolFoundationSeeder extends Seeder
             $staffUsers[] = $user;
         }
 
-        // 3. Create 1 Academic Year
-        $academicYear = AcademicYear::firstOrCreate(
-            ['name' => '2025/2026'],
-            [
-                'start_date' => '2025-07-01',
-                'end_date' => '2026-06-30',
-                'is_active' => true,
-            ]
-        );
+        // 3. Create 3 Academic Years
+        $academicYearsData = [
+            ['name' => '2024/2025', 'start_date' => '2024-07-01', 'end_date' => '2025-06-30', 'is_active' => false],
+            ['name' => '2025/2026', 'start_date' => '2025-07-01', 'end_date' => '2026-06-30', 'is_active' => true],
+            ['name' => '2026/2027', 'start_date' => '2026-07-01', 'end_date' => '2027-06-30', 'is_active' => false],
+        ];
 
-        // 4. Create Exactly 3 Classes (7A, 8A, 9A)
-        $grades = ['7', '8', '9'];
-
-        foreach ($grades as $index => $grade) {
-            SchoolClass::firstOrCreate(
+        $createdAcademicYears = [];
+        foreach ($academicYearsData as $ay) {
+            $createdAcademicYears[] = AcademicYear::firstOrCreate(
+                ['name' => $ay['name']],
                 [
-                    'name' => "Kelas $grade A",
-                    'academic_year_id' => $academicYear->id,
-                ],
-                [
-                    'grade' => $grade,
-                    'capacity' => 32,
-                    'homeroom_id' => $staffUsers[$index % count($staffUsers)]->id,
+                    'start_date' => $ay['start_date'],
+                    'end_date' => $ay['end_date'],
+                    'is_active' => $ay['is_active'],
                 ]
             );
+        }
+
+        // 4. Create Classes for SMP (Grade 7, 8, 9) with 2 sections (A, B) for each Academic Year
+        $grades = ['7', '8', '9'];
+        $sections = ['A', 'B'];
+
+        foreach ($createdAcademicYears as $year) {
+            foreach ($grades as $gradeIndex => $grade) {
+                foreach ($sections as $sectionIndex => $section) {
+                    SchoolClass::firstOrCreate(
+                        [
+                            'name' => "Kelas $grade$section",
+                            'academic_year_id' => $year->id,
+                        ],
+                        [
+                            'grade' => $grade,
+                            'capacity' => 30, // Normal capacity
+                            'homeroom_id' => $staffUsers[($gradeIndex + $sectionIndex) % count($staffUsers)]->id,
+                        ]
+                    );
+                }
+            }
         }
     }
 }
