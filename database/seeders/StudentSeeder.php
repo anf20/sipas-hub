@@ -75,6 +75,7 @@ class StudentSeeder extends Seeder
                 'name' => $studentData['name'],
                 'parent_user_id' => $assignedParent->id,
                 'school_class_id' => $studentData['class']->id,
+                'current_grade' => $studentData['class']->grade, // FIX: Mengisi jenjang kelas agar grafik tampil
                 'entry_year' => $studentData['class']->academicYear->start_date
                     ? date('Y', strtotime($studentData['class']->academicYear->start_date))
                     : date('Y'),
