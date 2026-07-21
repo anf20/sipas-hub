@@ -128,6 +128,57 @@
                             @endif
                         </flux:card>
 
+                        <!-- Future Invoices -->
+                        <flux:card class="p-0 overflow-hidden border-slate-200 dark:border-slate-800">
+                            <div class="p-4 bg-slate-50 dark:bg-zinc-800/50 border-b border-slate-100 dark:border-zinc-800 flex justify-between items-center">
+                                <div class="flex items-center gap-2 text-slate-700 dark:text-zinc-300">
+                                    <flux:icon.calendar variant="mini" />
+                                    <flux:heading size="md" class="text-inherit">{{ __('Tagihan Masa Depan (Belum Jatuh Tempo)') }}</flux:heading>
+                                </div>
+                                <flux:badge color="zinc" size="sm">{{ $futureInvoices->count() }}</flux:badge>
+                            </div>
+
+                            @if($futureInvoices->count() > 0)
+                                <flux:table>
+                                    <flux:table.columns>
+                                        <flux:table.column>{{ __('Tagihan') }}</flux:table.column>
+                                        <flux:table.column>{{ __('Jatuh Tempo') }}</flux:table.column>
+                                        <flux:table.column align="end">{{ __('Nominal') }}</flux:table.column>
+                                        <flux:table.column align="end"></flux:table.column>
+                                    </flux:table.columns>
+
+                                    <flux:table.rows>
+                                        @foreach($futureInvoices as $invoice)
+                                            <flux:table.row :key="$invoice->id">
+                                                <flux:table.cell>
+                                                    <div class="font-medium text-slate-500">{{ $invoice->feeType->name }}</div>
+                                                    @if($invoice->feeType->is_recurring)
+                                                        <div class="text-xs text-slate-400">{{ \Carbon\Carbon::create()->month($invoice->period_month)->translatedFormat('F') }} {{ $invoice->period_year }}</div>
+                                                    @endif
+                                                </flux:table.cell>
+                                                <flux:table.cell>
+                                                    <span class="text-slate-500">
+                                                        {{ $invoice->due_date->format('d/m/Y') }}
+                                                    </span>
+                                                </flux:table.cell>
+                                                <flux:table.cell align="end" class="font-mono font-medium text-slate-500">Rp {{ number_format($invoice->amount, 0, ',', '.') }}</flux:table.cell>
+                                                <flux:table.cell align="end">
+                                                    <flux:modal.trigger name="payment-modal">
+                                                        <flux:button wire:click="openPaymentModal({{ $invoice->id }}, {{ $invoice->amount }})" variant="subtle" size="sm">{{ __('Bayar Lebih Awal') }}</flux:button>
+                                                    </flux:modal.trigger>
+                                                </flux:table.cell>
+                                            </flux:table.row>
+                                        @endforeach
+                                    </flux:table.rows>
+                                </flux:table>
+                            @else
+                                <div class="p-8 text-center text-zinc-400">
+                                    <flux:icon.document-check class="mx-auto mb-2 text-slate-300" size="lg" />
+                                    {{ __('Tidak ada tagihan masa depan untuk siswa ini.') }}
+                                </div>
+                            @endif
+                        </flux:card>
+
                         <!-- Payment History -->
                         <flux:card class="p-0 overflow-hidden">
                             <div class="p-4 border-b border-zinc-100 dark:border-zinc-800">

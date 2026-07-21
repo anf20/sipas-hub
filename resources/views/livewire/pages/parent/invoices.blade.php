@@ -9,8 +9,11 @@
         </div>
     </section>
 
+    @php
+        $hasPayable = $invoices->whereIn('status', ['unpaid', 'inactive'])->count() > 0;
+    @endphp
     <!-- Quick Summary Section (Highest Priority) -->
-    @if($totalUnpaidBalance > 0)
+    @if($hasPayable)
         <div class="bg-primary-container text-on-primary-container rounded-2xl p-large flex flex-col gap-normal shadow-xl sticky top-[76px] z-40 mx-1 mb-2 border border-white/10">
             <div class="flex justify-between items-start px-1">
                 <div>
@@ -28,17 +31,32 @@
             </div>
 
             @if($isSelectMode)
-                <flux:button 
-                    wire:click="initiatePayment" 
-                    variant="primary" 
-                    icon="banknotes"
-                    class="w-full !bg-secondary !text-white border-none mt-2 h-[52px] !rounded-xl"
-                    :disabled="empty($selectedInvoices)"
-                >
-                    {{ __('Bayar Sekarang') }}
-                </flux:button>
+                <div class="flex flex-col gap-2 mt-2">
+                    <flux:button 
+                        wire:click="initiatePayment" 
+                        variant="primary" 
+                        icon="banknotes"
+                        class="w-full !bg-secondary !text-white border-none h-[52px] !rounded-xl"
+                        :disabled="empty($selectedInvoices)"
+                    >
+                        {{ __('Bayar Sekarang') }}
+                    </flux:button>
+                    <flux:button 
+                        wire:click="toggleSelectMode" 
+                        variant="ghost" 
+                        class="w-full !text-white/80 hover:!text-white hover:!bg-white/10 h-[42px] !rounded-xl"
+                    >
+                        {{ __('Batal Pilih') }}
+                    </flux:button>
+                </div>
             @else
-                <p class="text-[10px] text-white/70 italic px-1">{{ __('* Silakan klik pada kartu tagihan di atas untuk melihat detail dan melakukan pembayaran.') }}</p>
+                <flux:button 
+                    wire:click="toggleSelectMode" 
+                    icon="check-badge"
+                    class="w-full !bg-white/10 !text-white hover:!bg-white/20 border-white/20 mt-2 h-[52px] !rounded-xl"
+                >
+                    {{ __('Pilih Beberapa Tagihan (Bayar Massal)') }}
+                </flux:button>
             @endif
         </div>
     @endif
@@ -64,21 +82,6 @@
             {{ __('Sudah Bayar') }}
         </button>
 
-        @if($unpaidCount > 1 && ($filter === 'all' || $filter === 'unpaid'))
-            <div class="w-px h-6 bg-outline-variant mx-1 self-center shrink-0"></div>
-            <button 
-                wire:click="toggleSelectMode"
-                class="{{ $isSelectMode ? 'bg-error text-on-error' : 'bg-surface-container-high text-primary border border-primary/20' }} px-large py-2.5 rounded-xl font-label-bold text-xs font-semibold transition-all active:scale-95 whitespace-nowrap flex items-center gap-1.5 shrink-0"
-            >
-                @if($isSelectMode)
-                    <flux:icon.x-mark variant="outline" class="size-3.5" />
-                    {{ __('Batal Pilih') }}
-                @else
-                    <flux:icon.check-badge variant="outline" class="size-3.5" />
-                    {{ __('Bayar Massal') }}
-                @endif
-            </button>
-        @endif
     </nav>
 
     <!-- Grouped Invoices -->
@@ -92,10 +95,14 @@
                     <h3 class="font-title-sm text-lg font-medium text-primary">{{ $studentName }}</h3>
                     <div class="h-[1px] flex-1 bg-outline-variant opacity-50 ml-2"></div>
                 </div>
+                @php
+                    $activeInvoices = $studentInvoices->where('status', '!=', 'inactive');
+                    $futureInvoices = $studentInvoices->where('status', 'inactive');
+                @endphp
                 <div class="flex flex-col gap-3">
-                    @foreach($studentInvoices as $invoice)
+                    @foreach($activeInvoices as $invoice)
                         <div class="flex items-center gap-3">
-                            @if($isSelectMode && $invoice->status === 'unpaid')
+                            @if($isSelectMode && in_array($invoice->status, ['unpaid', 'inactive']))
                                 <flux:checkbox wire:model.live="selectedInvoices" value="{{ $invoice->id }}" class="shrink-0" />
                             @endif
                             
@@ -139,6 +146,10 @@
                                         <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-secondary-container text-on-secondary-container">
                                             {{ __('Sudah Bayar') }}
                                         </span>
+                                    @elseif($invoice->status === 'inactive')
+                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-zinc-200 text-zinc-700">
+                                            {{ __('Bulan Depan') }}
+                                        </span>
                                     @else
                                         <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-error-container text-on-error-container">
                                             {{ __('Belum Bayar') }}
@@ -148,6 +159,78 @@
                             </a>
                         </div>
                     @endforeach
+
+                    @if($futureInvoices->isNotEmpty() && $isSelectMode)
+                        @php
+                            $studentId = $futureInvoices->first()->student_id;
+                            $maxCount = $futureInvoices->count();
+                            $currentCount = $advanceCount[$studentId] ?? 0;
+                            $showingInvoices = $futureInvoices->take($currentCount);
+                        @endphp
+                        
+                        <div class="mt-4 flex flex-col gap-3">
+                            <div class="flex items-center justify-between p-3 bg-surface-container-low rounded-xl border border-outline-variant">
+                                <div class="flex flex-col gap-1">
+                                    <div class="flex items-center gap-2">
+                                        <flux:icon.clock variant="outline" class="size-4 text-on-surface-variant" />
+                                        <span class="font-label-bold text-sm text-on-surface-variant">{{ __('Bayar Tagihan Bulan Depan') }}</span>
+                                    </div>
+                                    <span class="text-xs text-on-surface-variant/70">{{ __('Maksimal: :max bulan', ['max' => $maxCount]) }}</span>
+                                </div>
+                                
+                                <div class="flex items-center gap-3 bg-surface-container-lowest p-1 rounded-lg border border-outline-variant shadow-sm">
+                                    <button wire:click="decrementAdvance({{ $studentId }})" class="w-8 h-8 flex items-center justify-center rounded-md hover:bg-surface-container-high transition-colors disabled:opacity-50 text-on-surface" {{ $currentCount <= 0 ? 'disabled' : '' }}>
+                                        <flux:icon.minus variant="mini" class="size-4" />
+                                    </button>
+                                    <span class="font-title-sm text-base font-semibold w-4 text-center">{{ $currentCount }}</span>
+                                    <button wire:click="incrementAdvance({{ $studentId }})" class="w-8 h-8 flex items-center justify-center rounded-md hover:bg-surface-container-high transition-colors disabled:opacity-50 text-on-surface" {{ $currentCount >= $maxCount ? 'disabled' : '' }}>
+                                        <flux:icon.plus variant="mini" class="size-4" />
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            @if($currentCount > 0)
+                                <div class="flex flex-col gap-3 pl-2 sm:pl-4 border-l-2 border-outline-variant/30 ml-2">
+                                    @foreach($showingInvoices as $invoice)
+                                        <div class="flex items-center gap-3 relative">
+                                            <!-- Fake disabled checkbox for UI consistency -->
+                                            <div class="shrink-0 flex items-center justify-center w-[18px] h-[18px] rounded-[4px] bg-primary text-white">
+                                                <flux:icon.check variant="mini" class="size-3.5" />
+                                            </div>
+                                            
+                                            <div class="bg-surface-container-lowest p-normal rounded-xl border border-outline-variant shadow-sm flex items-center justify-between opacity-80 flex-1">
+                                                <div class="flex items-center gap-normal text-left">
+                                                    <div class="w-12 h-12 rounded-xl bg-surface-container flex items-center justify-center shrink-0">
+                                                        <flux:icon.book-open variant="outline" class="size-5 text-primary" />
+                                                    </div>
+                                                    <div class="flex flex-col text-left">
+                                                        <p class="font-label-bold text-sm font-semibold text-on-surface leading-tight">{{ $invoice->feeType->name }}</p>
+                                                        <div class="flex flex-col gap-0.5">
+                                                            @if($invoice->period_month && $invoice->period_year)
+                                                                <p class="font-caption text-[10px] text-on-surface-variant/80">
+                                                                    {{ __('Periode: :month :year', [
+                                                                        'month' => Carbon\Carbon::create()->month($invoice->period_month)->translatedFormat('F'),
+                                                                        'year' => $invoice->period_year
+                                                                    ]) }}
+                                                                </p>
+                                                            @endif
+                                                            <p class="font-caption text-xs text-on-surface-variant">{{ __('Jatuh Tempo: :date', ['date' => $invoice->due_date->translatedFormat('d M Y')]) }}</p>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="text-right flex flex-col items-end gap-1">
+                                                    <p class="font-display-lg text-lg font-semibold text-primary">Rp {{ number_format($invoice->amount, 0, ',', '.') }}</p>
+                                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-zinc-200 text-zinc-700">
+                                                        {{ __('Bulan Depan') }}
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    @endforeach
+                                </div>
+                            @endif
+                        </div>
+                    @endif
                 </div>
             </div>
         @empty

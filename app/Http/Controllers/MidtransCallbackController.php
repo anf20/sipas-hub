@@ -107,7 +107,7 @@ class MidtransCallbackController extends Controller
 
             if ($transactionStatus == 'capture' || $transactionStatus == 'settlement') {
                 foreach ($invoices as $invoice) {
-                    if ($invoice->status === 'paid') {
+                    if ($invoice->status === 'paid' || $invoice->status === 'void') {
                         continue;
                     }
 
@@ -142,7 +142,15 @@ class MidtransCallbackController extends Controller
             } elseif ($transactionStatus == 'expire' || $transactionStatus == 'cancel' || $transactionStatus == 'deny') {
                 foreach ($invoices as $invoice) {
                     if ($invoice->status !== 'paid') {
-                        $invoice->update(['status' => 'unpaid']);
+                        // Revert status safely
+                        $currentMonth = now()->month;
+                        $currentYear = now()->year;
+
+                        // Jika periode invoice > bulan ini, kembalikan ke inactive
+                        $isFuture = ($invoice->period_year > $currentYear) ||
+                                    ($invoice->period_year == $currentYear && $invoice->period_month > $currentMonth);
+
+                        $invoice->update(['status' => $isFuture ? 'inactive' : 'unpaid']);
                     }
                 }
                 Log::info('Midtrans Callback: Payment failed/expired', ['order_id' => $orderId, 'status' => $transactionStatus]);

@@ -5,6 +5,10 @@
             <flux:breadcrumbs.item href="{{ route('academic.hub', ['tab' => 'classes']) }}" wire:navigate>{{ __('Manajemen Kelas') }}</flux:breadcrumbs.item>
             <flux:breadcrumbs.item>{{ __('Edit Kelas') }}</flux:breadcrumbs.item>
         </flux:breadcrumbs>
+        <flux:spacer />
+        <div class="hidden md:block font-bold text-sm text-slate-700 dark:text-zinc-300">
+            {{ \Carbon\Carbon::now()->translatedFormat('d F Y') }}
+        </div>
     </flux:header>
 
     <flux:main>

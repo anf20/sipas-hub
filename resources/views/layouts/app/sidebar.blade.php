@@ -29,9 +29,24 @@
 
                 @hasanyrole(['Super Admin', 'Admin Keuangan'])
                 <flux:sidebar.group :heading="__('Keuangan')" class="grid">
-                    <flux:sidebar.item icon="credit-card" :href="route('finance.hub')" :current="request()->routeIs('finance.*')" wire:navigate>
-                        {{ __('Manajemen Keuangan') }}
+                    <flux:sidebar.item icon="chart-pie" :href="route('finance.hub')" :current="request()->routeIs('finance.hub')" wire:navigate>
+                        {{ __('Ringkasan Keuangan') }}
                     </flux:sidebar.item>
+                    <flux:sidebar.item icon="academic-cap" :href="route('finance.spp.index')" :current="request()->routeIs('finance.spp.index')" wire:navigate>
+                        {{ __('Manajemen SPP') }}
+                    </flux:sidebar.item>
+                    <flux:sidebar.item icon="document-text" :href="route('finance.fee-types.index')" :current="request()->routeIs('finance.fee-types.index')" wire:navigate>
+                        {{ __('Tagihan Lainnya') }}
+                    </flux:sidebar.item>
+                    <!-- Reports and Audit commented out since we don't have separate pages for them yet or they were removed -->
+                    <!--
+                    <flux:sidebar.item icon="clipboard-document-list" :href="route('finance.hub', ['tab' => 'reports'])" :current="request()->routeIs('finance.hub') && request('tab') === 'reports'" wire:navigate>
+                        {{ __('Laporan Keuangan') }}
+                    </flux:sidebar.item>
+                    <flux:sidebar.item icon="shield-check" :href="route('finance.hub', ['tab' => 'audit'])" :current="request()->routeIs('finance.hub') && request('tab') === 'audit'" wire:navigate>
+                        {{ __('Log Audit') }}
+                    </flux:sidebar.item>
+                    -->
                     <flux:sidebar.item icon="banknotes" :href="route('finance.invoice.manual-payment')" :current="request()->routeIs('finance.invoice.manual-payment')" wire:navigate>
                         {{ __('Pembayaran Manual') }}
                     </flux:sidebar.item>

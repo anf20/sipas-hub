@@ -19,6 +19,8 @@ class Invoices extends Component
 
     public array $selectedInvoices = [];
 
+    public array $advanceCount = [];
+
     public string $paymentMethod = 'bca_va';
 
     public function setFilter($filter)
@@ -26,6 +28,7 @@ class Invoices extends Component
         $this->filter = $filter;
         $this->isSelectMode = false;
         $this->selectedInvoices = [];
+        $this->advanceCount = [];
         $this->showConfirmationModal = false;
     }
 
@@ -33,7 +36,86 @@ class Invoices extends Component
     {
         $this->isSelectMode = ! $this->isSelectMode;
         $this->selectedInvoices = [];
+        $this->advanceCount = [];
         $this->showConfirmationModal = false;
+    }
+
+    public function incrementAdvance($studentId)
+    {
+        $inactiveInvoices = Invoice::where('student_id', $studentId)
+            ->where('status', 'inactive')
+            ->orderBy('due_date', 'asc')
+            ->get();
+            
+        $currentCount = $this->advanceCount[$studentId] ?? 0;
+        
+        if ($currentCount < $inactiveInvoices->count()) {
+            $this->advanceCount[$studentId] = $currentCount + 1;
+            $invoiceToAdd = $inactiveInvoices[$currentCount];
+            
+            if (!in_array((string)$invoiceToAdd->id, $this->selectedInvoices)) {
+                $this->selectedInvoices[] = (string)$invoiceToAdd->id;
+            }
+
+            // Auto-check all unpaid invoices for this student
+            $unpaidInvoices = Invoice::where('student_id', $studentId)
+                ->where('status', 'unpaid')
+                ->pluck('id');
+                
+            foreach ($unpaidInvoices as $unpaidId) {
+                if (!in_array((string)$unpaidId, $this->selectedInvoices)) {
+                    $this->selectedInvoices[] = (string)$unpaidId;
+                }
+            }
+        }
+    }
+
+    public function decrementAdvance($studentId)
+    {
+        $inactiveInvoices = Invoice::where('student_id', $studentId)
+            ->where('status', 'inactive')
+            ->orderBy('due_date', 'asc')
+            ->get();
+            
+        $currentCount = $this->advanceCount[$studentId] ?? 0;
+        
+        if ($currentCount > 0) {
+            $invoiceToRemove = $inactiveInvoices[$currentCount - 1];
+            
+            $this->selectedInvoices = array_values(array_filter($this->selectedInvoices, fn($id) => (string)$id !== (string)$invoiceToRemove->id));
+            
+            $this->advanceCount[$studentId] = $currentCount - 1;
+        }
+    }
+
+    public function updatedSelectedInvoices()
+    {
+        foreach ($this->advanceCount as $studentId => $count) {
+            if ($count > 0) {
+                $unpaidInvoices = Invoice::where('student_id', $studentId)
+                    ->where('status', 'unpaid')
+                    ->pluck('id')
+                    ->map(fn($id) => (string)$id)
+                    ->toArray();
+                
+                // If the user unchecks an unpaid invoice while advance is active
+                if (count(array_diff($unpaidInvoices, $this->selectedInvoices)) > 0) {
+                    // Reset advance count
+                    $this->advanceCount[$studentId] = 0;
+                    
+                    // Remove all inactive invoices of this student from selectedInvoices
+                    $inactiveIds = Invoice::where('student_id', $studentId)
+                        ->where('status', 'inactive')
+                        ->pluck('id')
+                        ->map(fn($id) => (string)$id)
+                        ->toArray();
+                        
+                    $this->selectedInvoices = array_values(array_diff($this->selectedInvoices, $inactiveIds));
+                    
+                    \Flux::toast(__('Sistem membatalkan tagihan bulan depan karena Anda menghapus pilihan pada tagihan bulan sebelumnya.'), variant: 'warning');
+                }
+            }
+        }
     }
 
     public function initiatePayment()
@@ -50,7 +132,7 @@ class Invoices extends Component
     public function paySelected()
     {
         $invoices = Invoice::whereIn('id', $this->selectedInvoices)
-            ->where('status', 'unpaid')
+            ->whereIn('status', ['unpaid', 'inactive'])
             ->get();
 
         if ($invoices->isEmpty()) {
@@ -108,6 +190,7 @@ class Invoices extends Component
         $groupedInvoices = $invoices->groupBy(fn ($invoice) => $invoice->student->name);
 
         return view('livewire.pages.parent.invoices', [
+            'invoices' => $invoices,
             'groupedInvoices' => $groupedInvoices,
             'totalUnpaidBalance' => $totalUnpaidBalance,
             'invoicesTotal' => $invoicesTotal,

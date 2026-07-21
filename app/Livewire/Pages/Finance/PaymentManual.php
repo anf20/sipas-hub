@@ -62,7 +62,7 @@ class PaymentManual extends Component
         try {
             DB::beginTransaction();
 
-            $invoice = Invoice::where('id', $this->selectedInvoiceId)->where('status', 'unpaid')->lockForUpdate()->firstOrFail();
+            $invoice = Invoice::where('id', $this->selectedInvoiceId)->whereIn('status', ['unpaid', 'inactive'])->lockForUpdate()->firstOrFail();
 
             // Generate receipt number (SCH-YYYYMM-XXXX)
             $prefix = 'SCH-'.date('Ym').'-';
@@ -122,6 +122,7 @@ class PaymentManual extends Component
 
         $selectedStudent = null;
         $unpaidInvoices = collect();
+        $futureInvoices = collect();
         $paidInvoices = collect();
 
         if ($this->selectedStudentId) {
@@ -130,6 +131,12 @@ class PaymentManual extends Component
                 $unpaidInvoices = $selectedStudent->invoices()
                     ->with('feeType')
                     ->where('status', 'unpaid')
+                    ->orderBy('due_date', 'asc')
+                    ->get();
+
+                $futureInvoices = $selectedStudent->invoices()
+                    ->with('feeType')
+                    ->where('status', 'inactive')
                     ->orderBy('due_date', 'asc')
                     ->get();
 
@@ -146,6 +153,7 @@ class PaymentManual extends Component
             'students' => $students,
             'selectedStudent' => $selectedStudent,
             'unpaidInvoices' => $unpaidInvoices,
+            'futureInvoices' => $futureInvoices,
             'paidInvoices' => $paidInvoices,
         ])->title(__('Pembayaran Manual'));
     }

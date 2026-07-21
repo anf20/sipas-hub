@@ -1,4 +1,4 @@
-﻿PRODUCT REQUIREMENTS DOCUMENT
+PRODUCT REQUIREMENTS DOCUMENT
 Sistem Informasi Pembayaran SPP & Kegiatan Sekolah
 SIPAS-Hub — Platform Pembayaran Sekolah Berbasis Web
 Nama Proyek
@@ -8,11 +8,11 @@ Nama Proyek
 	Tanggal
 	Mei 2025
 	Tech Stack
-	Laravel 13 + Livewire 4 + SQLite/MySQL 8 + Tailwind CSS 4
+	Laravel 13 + Livewire 4 + MySQL 8 + Tailwind CSS 4
 	Status
-	Draft — Menunggu Persetujuan Stakeholder
+	Selesai (Deployed to Production)
 	Prioritas Dev
-	1) Data Siswa & Kelas 2) Tagihan 3) Payment Gateway
+	Semua Fase Selesai (Fase 1, 2, dan 3)
 	1. Pendahuluan
 1.1 Latar Belakang
 Pengelolaan keuangan sekolah, khususnya pembayaran SPP dan biaya kegiatan siswa, masih banyak dilakukan secara manual. Proses ini rentan terhadap kesalahan pencatatan, keterlambatan pelaporan, dan kurangnya transparansi bagi orang tua. SIPAS-Hub hadir sebagai solusi digital berbasis web yang memungkinkan administrasi sekolah mengelola tagihan secara otomatis, sementara orang tua dapat memantau dan melakukan pembayaran secara online kapan saja.
@@ -75,8 +75,8 @@ Layer
 	Laravel Storage + S3/Local
 	Bukti bayar, foto siswa, dokumen
 	Payment Gateway
-	Midtrans / Xendit
-	FASE 3 — dikerjakan terakhir
+	Midtrans
+	Terintegrasi penuh (termasuk VA, QRIS, e-Wallet)
 	Export
 	Laravel Excel + DomPDF
 	Export Excel & PDF laporan
@@ -248,15 +248,15 @@ Fase
  
 	Fase 1
 	Setup project, CRUD Siswa, Kelas, Tagihan SPP, Pembayaran Manual, Portal Ortu
-	Ya
+	Selesai
 	Fase 2
 	Export Reports, Scheduler, Notifikasi WA/Email, Audit Log
-	Penting
+	Selesai
 	Fase 3
-	Payment Gateway (VA, QRIS, e-wallet), Webhook handler
-	Nanti
+	Payment Gateway (VA, QRIS, e-wallet), Webhook handler, Bulk Payment
+	Selesai
 	9. Payment Gateway — Spesifikasi Fase 3
-Dikerjakan TERAKHIR setelah sistem inti stabil.
+Telah sepenuhnya diintegrasikan menggunakan Midtrans. Sistem inti telah stabil dan mendukung pembayaran real-time via Webhook.
 Provider
 	Metode
 	Biaya
@@ -286,7 +286,9 @@ Fitur & Optimasi yang Telah Diselesaikan:
 7. Konsistensi UI/UX: Sinkronisasi rona background, font (Lexend & Inter), dan ikon (Flux UI SVG) di seluruh portal orang tua dan halaman login.
 8. Keputusan Teknis Autentikasi: Menonaktifkan kewajiban verifikasi email (MustVerifyEmail) untuk mempermudah login orang tua, karena pembuatan akun bersifat tersentralisasi.
 
-Persiapan Deployment VPS (Terjadwal: Besok Malam):
-- Target Server: VPS (min 2GB RAM), Ubuntu 22.04 / 24.04.
-- Control Panel: CloudPanel (Gratis & Mudah digunakan).
-- Tahapan Utama: Pull branch dari GitHub, Instalasi dependensi (PHP 8.4 & Node.js/Vite), Konfigurasi .env (Database & SMTP), dan penyesuaian Webhook Midtrans (Production URL).
+[Akhir Juni 2026]
+Penyelesaian Sistem Demo & Deployment Production:
+1. Deployment Berhasil: Aplikasi telah sukses di-deploy ke VPS IDCloudHost (2 CPU, 2GB RAM) menggunakan CloudPanel 2.5 (Nginx, MySQL, PHP 8.4).
+2. Demo Seeder Akademik: Pembuatan seeder cerdas untuk jenjang SMP dengan 3 tahun ajaran beruntun (total 18 kelas). Data siswa menggunakan nama lokal Indonesia dengan distribusi wali murid 80/20 untuk mensimulasikan anak tunggal & kakak-adik secara akurat.
+3. Demo Seeder Keuangan (FinancialDemoSeeder): Generate otomatis riwayat tagihan dan pembayaran 3 bulan ke belakang untuk mempercantik data pada Dashboard Chart Admin.
+4. Fitur Final Midtrans: Pembayaran manual kasir maupun Bulk Payment (bayar sekaligus beberapa tagihan via Midtrans VA) telah berfungsi sempurna dan divalidasi keamanannya di production.

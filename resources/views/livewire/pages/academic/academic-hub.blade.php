@@ -11,6 +11,10 @@
                 @endif
             </flux:breadcrumbs.item>
         </flux:breadcrumbs>
+        <flux:spacer />
+        <div class="hidden md:block font-bold text-sm text-slate-700 dark:text-zinc-300">
+            {{ \Carbon\Carbon::now()->translatedFormat('d F Y') }}
+        </div>
     </flux:header>
 
     <flux:main>
@@ -259,7 +263,7 @@
                 @endif
 
                 @if($tab === 'promotion')
-                    @livewire('pages.academic.promotion-wizard')
+                    <livewire:student-promotion-manager />
                 @endif
             </div>
         </div>

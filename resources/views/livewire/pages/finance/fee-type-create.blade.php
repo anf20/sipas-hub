@@ -5,6 +5,10 @@
             <flux:breadcrumbs.item href="{{ route('finance.hub', ['tab' => 'fees']) }}" wire:navigate>{{ __('Tagihan Lainnya') }}</flux:breadcrumbs.item>
             <flux:breadcrumbs.item>{{ __('Tambah Baru') }}</flux:breadcrumbs.item>
         </flux:breadcrumbs>
+        <flux:spacer />
+        <div class="hidden md:block font-bold text-sm text-slate-700 dark:text-zinc-300">
+            {{ \Carbon\Carbon::now()->translatedFormat('d F Y') }}
+        </div>
     </flux:header>
 
     <flux:main>

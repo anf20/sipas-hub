@@ -44,4 +44,10 @@ return [
         'is_3ds' => true,
     ],
 
+    'whatsapp' => [
+        'driver' => env('WA_DRIVER', 'log'),
+        'test_number' => env('WA_TEST_NUMBER'),
+        'fonnte_token' => env('FONNTE_TOKEN'),
+    ],
+
 ];

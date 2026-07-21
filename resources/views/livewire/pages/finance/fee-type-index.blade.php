@@ -1,6 +1,10 @@
 <div class="flex h-full w-full flex-1 flex-col gap-4 rounded-xl">
     <flux:header>
         <flux:heading size="xl">{{ __('Data Tagihan') }}</flux:heading>
+        <flux:spacer />
+        <div class="hidden md:block font-bold text-sm text-slate-700 dark:text-zinc-300">
+            {{ \Carbon\Carbon::now()->translatedFormat('d F Y') }}
+        </div>
     </flux:header>
 
     <flux:main>
@@ -40,6 +44,7 @@
                             <flux:table.cell>
                                 <div class="flex gap-2">
                                     <flux:button variant="ghost" size="sm" icon="eye" :href="route('finance.fee-types.show', $type->id)" wire:navigate />
+                                    <flux:button variant="ghost" size="sm" icon="megaphone" class="text-green-600" :href="route('finance.fee-types.whatsapp-blast', $type->id)" wire:navigate />
                                     <flux:button variant="ghost" size="sm" icon="pencil" :href="route('finance.fee-types.edit', $type->id)" wire:navigate />
                                     
                                     <flux:modal.trigger name="delete-feetype-{{ $type->id }}">

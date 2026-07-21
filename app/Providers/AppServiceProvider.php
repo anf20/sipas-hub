@@ -15,7 +15,15 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        //
+        $this->app->singleton(\App\Services\Contracts\WhatsappServiceInterface::class, function ($app) {
+            $driver = config('services.whatsapp.driver', 'log');
+            
+            if ($driver === 'fonnte') {
+                return new \App\Services\Whatsapp\FonnteWhatsappService();
+            }
+            
+            return new \App\Services\Whatsapp\LogWhatsappService();
+        });
     }
 
     /**

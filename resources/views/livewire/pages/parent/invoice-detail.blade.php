@@ -8,15 +8,17 @@
     <!-- Invoice Card Details -->
     <div class="bg-surface-container-lowest rounded-3xl border border-outline-variant shadow-sm overflow-hidden flex flex-col">
         <!-- Status Header -->
-        <div class="px-normal py-small flex items-center justify-between {{ $invoice->status === 'paid' ? 'bg-secondary-container/20' : 'bg-error-container/10' }}">
+        <div class="px-normal py-small flex items-center justify-between {{ $invoice->status === 'paid' ? 'bg-secondary-container/20' : ($invoice->status === 'inactive' ? 'bg-zinc-200/50' : 'bg-error-container/10') }}">
             <div class="flex items-center gap-2">
                 @if($invoice->status === 'paid')
                     <flux:icon.check-circle variant="solid" class="size-5 text-on-secondary-container" />
+                @elseif($invoice->status === 'inactive')
+                    <flux:icon.clock variant="solid" class="size-5 text-zinc-600" />
                 @else
                     <flux:icon.clock variant="solid" class="size-5 text-on-error-container" />
                 @endif
-                <span class="font-label-bold text-xs uppercase tracking-wider {{ $invoice->status === 'paid' ? 'text-on-secondary-container' : 'text-on-error-container' }}">
-                    {{ $invoice->status === 'paid' ? __('Lunas') : __('Belum Bayar') }}
+                <span class="font-label-bold text-xs uppercase tracking-wider {{ $invoice->status === 'paid' ? 'text-on-secondary-container' : ($invoice->status === 'inactive' ? 'text-zinc-600' : 'text-on-error-container') }}">
+                    {{ $invoice->status === 'paid' ? __('Lunas') : ($invoice->status === 'inactive' ? __('Bulan Depan') : __('Belum Bayar')) }}
                 </span>
             </div>
             <span class="font-label-md text-xs text-on-surface-variant">#INV-{{ $invoice->id }}</span>
@@ -65,7 +67,7 @@
         </div>
 
         <!-- Action Button Section -->
-        @if($invoice->status === 'unpaid')
+        @if(in_array($invoice->status, ['unpaid', 'inactive']))
             <div class="p-normal bg-surface-container-low border-t border-outline-variant">
                 <flux:button 
                     wire:click="initiatePayment" 
