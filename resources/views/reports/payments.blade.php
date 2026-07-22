@@ -85,7 +85,7 @@
                     <td>{{ $index + 1 }}</td>
                     <td>{{ $payment->paid_at->format('d/m/Y H:i') }}</td>
                     <td>{{ $payment->invoice->student->name }}</td>
-                    <td>{{ $payment->invoice->feeType->name }}</td>
+                    <td>{{ $payment->invoice->billing_detail }}</td>
                     <td>{{ ucfirst($payment->method) }}</td>
                     <td class="text-right">Rp {{ number_format($payment->amount, 0, ',', '.') }}</td>
                 </tr>

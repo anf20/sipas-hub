@@ -7,7 +7,7 @@
         <div class="text-center space-y-2">
             <h2 class="font-headline-md text-3xl font-bold text-primary">{{ __('Pembayaran Berhasil!') }}</h2>
             <p class="font-body-md text-on-surface-variant max-w-xs mx-auto">
-                {{ __('Terima kasih. Pembayaran Anda untuk :fee telah kami terima.', ['fee' => $payment->invoice->feeType->name]) }}
+                {{ __('Terima kasih. Pembayaran Anda untuk :fee telah kami terima.', ['fee' => $payment->invoice->billing_detail]) }}
             </p>
         </div>
     </div>

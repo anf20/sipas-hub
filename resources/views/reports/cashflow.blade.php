@@ -238,7 +238,7 @@
                     </td>
                     <td>{{ $payment->invoice->student->class ?? '-' }}</td>
                     <td>
-                        {{ $payment->invoice->feeType->name ?? 'Tagihan' }}
+                        {{ $payment->invoice->billing_detail ?? 'Tagihan' }}
                     </td>
                     <td>{{ strtoupper($payment->method) }}</td>
                     <td class="text-right">Rp {{ number_format($payment->amount, 0, ',', '.') }}</td>

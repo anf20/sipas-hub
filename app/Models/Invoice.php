@@ -42,4 +42,18 @@ class Invoice extends Model
     {
         return $this->belongsTo(User::class, 'generated_by');
     }
+
+    /**
+     * Get the formatted billing detail name.
+     * Shows specific month for SPP.
+     */
+    public function getBillingDetailAttribute(): string
+    {
+        if ($this->feeType && $this->feeType->category === 'SPP' && $this->period_month) {
+            $monthName = \Carbon\Carbon::create()->month($this->period_month)->translatedFormat('F');
+            return "SPP Bulan {$monthName} {$this->period_year}";
+        }
+
+        return $this->feeType ? $this->feeType->name : 'Tagihan';
+    }
 }

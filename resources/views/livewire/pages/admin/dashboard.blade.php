@@ -55,7 +55,7 @@
                                             <span class="text-xs text-zinc-500">{{ $invoice->student->nis }}</span>
                                         </div>
                                     </flux:table.cell>
-                                    <flux:table.cell>{{ $invoice->feeType->name }}</flux:table.cell>
+                                    <flux:table.cell>{{ $invoice->billing_detail }}</flux:table.cell>
                                     <flux:table.cell>Rp {{ number_format($invoice->amount, 0, ',', '.') }}</flux:table.cell>
                                     <flux:table.cell>
                                         <flux:badge color="red">{{ $invoice->due_date->format('d/m/Y') }}</flux:badge>
@@ -91,7 +91,7 @@
                                             <span class="text-xs text-zinc-500">{{ $payment->invoice->student->nis }}</span>
                                         </div>
                                     </flux:table.cell>
-                                    <flux:table.cell>{{ $payment->invoice->feeType->name }}</flux:table.cell>
+                                    <flux:table.cell>{{ $payment->invoice->billing_detail }}</flux:table.cell>
                                     <flux:table.cell>Rp {{ number_format($payment->amount, 0, ',', '.') }}</flux:table.cell>
                                     <flux:table.cell>{{ $payment->paid_at->format('d/m/Y H:i') }}</flux:table.cell>
                                 </flux:table.row>

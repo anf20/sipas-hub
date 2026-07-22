@@ -97,7 +97,7 @@
                             <flux:table.rows>
                                 @forelse($invoices as $invoice)
                                     <flux:table.row :key="'inv-'.$invoice->id">
-                                        <flux:table.cell font-weight="medium">{{ $invoice->feeType->name }}</flux:table.cell>
+                                        <flux:table.cell font-weight="medium">{{ $invoice->billing_detail }}</flux:table.cell>
                                         <flux:table.cell>{{ $invoice->period_month }}/{{ $invoice->period_year }}</flux:table.cell>
                                         <flux:table.cell>Rp {{ number_format($invoice->amount, 0, ',', '.') }}</flux:table.cell>
                                         <flux:table.cell>

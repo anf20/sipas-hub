@@ -77,7 +77,7 @@
                             @endif
                         </div>
                         <div class="flex flex-col">
-                            <span class="font-label-bold text-sm font-semibold text-on-surface">{{ $invoice->feeType->name }}</span>
+                            <span class="font-label-bold text-sm font-semibold text-on-surface">{{ $invoice->billing_detail }}</span>
                             <span class="font-caption text-xs text-on-surface-variant">{{ $invoice->student->name }} • {{ $invoice->due_date->translatedFormat('d M Y') }}</span>
                         </div>
                     </div>

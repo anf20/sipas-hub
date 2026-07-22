@@ -214,7 +214,7 @@
                                         <span class="text-xs text-zinc-500">{{ __('Kelas:') }} {{ $payment->invoice->student->class ?? '-' }}</span>
                                     </div>
                                 </flux:table.cell>
-                                <flux:table.cell>{{ $payment->invoice->feeType->name ?? 'Tagihan' }}</flux:table.cell>
+                                <flux:table.cell>{{ $payment->invoice->billing_detail ?? 'Tagihan' }}</flux:table.cell>
                                 <flux:table.cell>
                                     @if(in_array(strtolower($payment->method), ['manual', 'cash']))
                                         <flux:badge size="sm" color="zinc">{{ __('Tunai/Kasir') }}</flux:badge>

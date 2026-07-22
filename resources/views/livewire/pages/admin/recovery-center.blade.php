@@ -69,7 +69,7 @@
                     @forelse ($trashedInvoices as $invoice)
                         <flux:table.row :key="$invoice->id">
                             <flux:table.cell font="medium">{{ $invoice->student->name ?? __('Terhapus Permanen') }}</flux:table.cell>
-                            <flux:table.cell>{{ $invoice->feeType->name ?? '-' }}</flux:table.cell>
+                            <flux:table.cell>{{ $invoice->billing_detail ?? '-' }}</flux:table.cell>
                             <flux:table.cell>{{ number_format($invoice->amount, 0, ',', '.') }}</flux:table.cell>
                             <flux:table.cell>{{ $invoice->period_month }}/{{ $invoice->period_year }}</flux:table.cell>
                             <flux:table.cell>{{ $invoice->deleted_at->format('d/m/Y H:i') }}</flux:table.cell>

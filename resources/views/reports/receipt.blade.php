@@ -178,7 +178,7 @@
             <td class="label-konten">Untuk Pembayaran</td>
             <td class="titik-dua">:</td>
             <td class="isi-konten">
-                {{ $payment->invoice->feeType->name }} 
+                {{ $payment->invoice->billing_detail }} 
                 @if($payment->invoice->period_month)
                     - Periode {{ \Illuminate\Support\Carbon::parse('2026-'.$payment->invoice->period_month.'-01')->translatedFormat('F') }} {{ $payment->invoice->period_year }}
                 @endif
@@ -199,7 +199,7 @@
         <tbody>
             <tr>
                 <td>1.</td>
-                <td>{{ $payment->invoice->feeType->name }} (Siswa: {{ $payment->invoice->student->name }})</td>
+                <td>{{ $payment->invoice->billing_detail }} (Siswa: {{ $payment->invoice->student->name }})</td>
                 <td class="text-right">{{ number_format($payment->invoice->amount, 0, ',', '.') }}</td>
             </tr>
             @php

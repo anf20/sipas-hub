@@ -47,7 +47,7 @@
 
                 <div class="flex flex-col gap-0.5">
                     <p class="font-label-bold text-xs text-on-surface-variant uppercase tracking-tight">{{ __('Jenis Tagihan') }}</p>
-                    <p class="font-body-lg text-lg font-medium text-on-surface">{{ $invoice->feeType->name }}</p>
+                    <p class="font-body-lg text-lg font-medium text-on-surface">{{ $invoice->billing_detail }}</p>
                 </div>
 
                 <div class="flex flex-col gap-0.5">
@@ -149,7 +149,7 @@
                 <div class="text-xs font-bold text-zinc-400 uppercase tracking-widest">{{ __('Rincian Tagihan') }}</div>
                 <div class="flex justify-between items-start border-b border-zinc-100 dark:border-zinc-800 pb-2">
                     <div class="flex flex-col gap-0.5">
-                        <span class="font-semibold text-sm">{{ $invoice->feeType->name }}</span>
+                        <span class="font-semibold text-sm">{{ $invoice->billing_detail }}</span>
                         <span class="text-xs text-zinc-500">{{ $invoice->student->name }}</span>
                     </div>
                     <span class="font-medium text-sm">Rp {{ number_format($invoice->amount, 0, ',', '.') }}</span>

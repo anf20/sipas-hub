@@ -100,7 +100,7 @@
                                         @foreach($unpaidInvoices as $invoice)
                                             <flux:table.row :key="$invoice->id">
                                                 <flux:table.cell>
-                                                    <div class="font-medium">{{ $invoice->feeType->name }}</div>
+                                                    <div class="font-medium">{{ $invoice->billing_detail }}</div>
                                                     @if($invoice->feeType->is_recurring)
                                                         <div class="text-xs text-zinc-500">{{ \Carbon\Carbon::create()->month($invoice->period_month)->translatedFormat('F') }} {{ $invoice->period_year }}</div>
                                                     @endif
@@ -151,7 +151,7 @@
                                         @foreach($futureInvoices as $invoice)
                                             <flux:table.row :key="$invoice->id">
                                                 <flux:table.cell>
-                                                    <div class="font-medium text-slate-500">{{ $invoice->feeType->name }}</div>
+                                                    <div class="font-medium text-slate-500">{{ $invoice->billing_detail }}</div>
                                                     @if($invoice->feeType->is_recurring)
                                                         <div class="text-xs text-slate-400">{{ \Carbon\Carbon::create()->month($invoice->period_month)->translatedFormat('F') }} {{ $invoice->period_year }}</div>
                                                     @endif
@@ -198,7 +198,7 @@
                                             @php $payment = $invoice->payments->first(); @endphp
                                             <flux:table.row :key="'paid-'.$invoice->id">
                                                 <flux:table.cell>
-                                                    <div class="font-medium">{{ $invoice->feeType->name }}</div>
+                                                    <div class="font-medium">{{ $invoice->billing_detail }}</div>
                                                     <div class="text-xs text-green-600 dark:text-green-400">{{ __('Lunas') }}</div>
                                                 </flux:table.cell>
                                                 <flux:table.cell>

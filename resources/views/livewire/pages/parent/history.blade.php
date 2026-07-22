@@ -25,7 +25,7 @@
                         @endif
                     </div>
                     <div class="flex flex-col text-left">
-                        <p class="font-label-bold text-sm font-semibold text-on-surface leading-tight">{{ $invoice->feeType->name }}</p>
+                        <p class="font-label-bold text-sm font-semibold text-on-surface leading-tight">{{ $invoice->billing_detail }}</p>
                         <div class="flex flex-col gap-0.5">
                             <p class="font-caption text-xs text-on-surface-variant">
                                 {{ $invoice->student->name }} • {{ $invoice->updated_at->translatedFormat('d M Y') }}
