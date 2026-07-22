@@ -4,13 +4,14 @@ use App\Http\Controllers\FinanceReportController;
 use App\Livewire\Pages\Finance\FeeTypeCreate;
 use App\Livewire\Pages\Finance\FeeTypeEdit;
 use App\Livewire\Pages\Finance\FeeTypeShow;
-use App\Livewire\Pages\Finance\FinanceHub;
+use App\Livewire\Pages\Finance\FinancialReport;
 use App\Livewire\Pages\Finance\PaymentManual;
 use App\Livewire\Pages\Finance\SppMonthShow;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware(['auth', 'verified'])->prefix('finance')->name('finance.')->group(function () {
-    Route::get('/', FinanceHub::class)->name('hub');
+    // Analytics & Dashboard (Sentralisasi)
+    Route::get('/', FinancialReport::class)->name('hub');
 
     Route::get('spp', \App\Livewire\Pages\Finance\SppIndex::class)->name('spp.index');
     Route::get('spp/months/{month}', SppMonthShow::class)->name('spp.months.show');
@@ -26,5 +27,5 @@ Route::middleware(['auth', 'verified'])->prefix('finance')->name('finance.')->gr
     Route::get('fee-types/{feeType}/whatsapp-blast', \App\Livewire\Pages\Finance\WhatsappBlastFee::class)->name('fee-types.whatsapp-blast');
 
     // Reports
-    Route::get('reports/payments/pdf', [FinanceReportController::class, 'exportPaymentsPdf'])->name('reports.payments.pdf');
+    Route::get('reports/financial/pdf', [\App\Http\Controllers\FinanceReportController::class, 'exportCashflowPdf'])->name('reports.financial.pdf');
 });

@@ -19,43 +19,71 @@
              
              <flux:table>
                 <flux:table.columns>
-                    <flux:table.column>{{ __('Nama Tagihan') }}</flux:table.column>
+                    <flux:table.column>{{ __('Nama Tagihan / Event') }}</flux:table.column>
                     <flux:table.column>{{ __('Kategori') }}</flux:table.column>
-                    <flux:table.column>{{ __('Tipe') }}</flux:table.column>
-                    <flux:table.column>{{ __('Nominal') }}</flux:table.column>
-                    <flux:table.column>{{ __('Status') }}</flux:table.column>
-                    <flux:table.column></flux:table.column>
+                    <flux:table.column>{{ __('Sasaran / Scope') }}</flux:table.column>
+                    <flux:table.column align="end">{{ __('Total Ditagihkan (Target)') }}</flux:table.column>
+                    <flux:table.column align="end">{{ __('Pemasukan (Lunas)') }}</flux:table.column>
+                    <flux:table.column align="end">{{ __('Sisa Tunggakan') }}</flux:table.column>
+                    <flux:table.column align="end">{{ __('Rate Pelunasan (%)') }}</flux:table.column>
+                    <flux:table.column align="end">{{ __('Aksi') }}</flux:table.column>
                 </flux:table.columns>
 
                 <flux:table.rows>
                     @foreach($feeTypes as $type)
                         <flux:table.row :key="$type->id">
-                            <flux:table.cell font-weight="medium">{{ $type->name }}</flux:table.cell>
+                            <flux:table.cell font-weight="medium">
+                                {{ $type->name }}
+                                @if(!$type->is_active)
+                                    <flux:badge size="sm" class="ml-2 bg-red-100 text-red-700">Nonaktif</flux:badge>
+                                @endif
+                            </flux:table.cell>
                             <flux:table.cell>
                                 <flux:badge size="sm" class="bg-zinc-100 text-zinc-800 dark:bg-zinc-800 dark:text-zinc-200 border border-zinc-200 dark:border-zinc-700" inset="top">{{ ucfirst($type->category) }}</flux:badge>
                             </flux:table.cell>
                             <flux:table.cell>
-                                {{ $type->is_recurring ? __('Bulanan') : __('Sekali Saja') }}
+                                @php
+                                    $grades = is_string($type->applicable_grades) ? json_decode($type->applicable_grades, true) : $type->applicable_grades;
+                                @endphp
+                                @if(empty($grades))
+                                    <span class="text-sm text-slate-500">{{ __('Semua Siswa') }}</span>
+                                @else
+                                    <span class="text-sm text-slate-700 dark:text-zinc-300">Kelas {{ implode(', ', $grades) }}</span>
+                                @endif
                             </flux:table.cell>
-                            <flux:table.cell>Rp {{ number_format($type->default_amount, 0, ',', '.') }}</flux:table.cell>
-                            <flux:table.cell>
-                                <flux:switch wire:click="toggleStatus({{ $type->id }})" :checked="$type->is_active" />
+                            <flux:table.cell align="end" class="font-mono tabular-nums text-slate-700 dark:text-zinc-300">
+                                Rp {{ number_format($type->total_paid_amount + $type->total_unpaid_amount, 0, ',', '.') }}
                             </flux:table.cell>
-                            <flux:table.cell>
-                                <div class="flex gap-2">
+                            <flux:table.cell align="end" class="font-mono tabular-nums text-emerald-600 dark:text-emerald-400 font-medium">
+                                Rp {{ number_format($type->total_paid_amount, 0, ',', '.') }}
+                            </flux:table.cell>
+                            <flux:table.cell align="end" class="font-mono tabular-nums text-rose-600 dark:text-rose-400 font-medium">
+                                Rp {{ number_format($type->total_unpaid_amount, 0, ',', '.') }}
+                            </flux:table.cell>
+                            <flux:table.cell align="end">
+                                @php $rate = $type->total_invoices > 0 ? round(($type->paid_invoices / $type->total_invoices) * 100, 1) : 0; @endphp
+                                <div class="flex items-center justify-end gap-2">
+                                    <span class="text-sm font-medium">{{ $rate }}%</span>
+                                    <div class="w-16 bg-slate-200 dark:bg-zinc-700 h-1.5 rounded-full overflow-hidden">
+                                        <div class="bg-blue-500 h-full" style="width: {{ $rate }}%"></div>
+                                    </div>
+                                </div>
+                            </flux:table.cell>
+                            <flux:table.cell align="end">
+                                <div class="flex gap-2 justify-end">
                                     <flux:button variant="ghost" size="sm" icon="eye" :href="route('finance.fee-types.show', $type->id)" wire:navigate />
                                     <flux:button variant="ghost" size="sm" icon="megaphone" class="text-green-600" :href="route('finance.fee-types.whatsapp-blast', $type->id)" wire:navigate />
                                     <flux:button variant="ghost" size="sm" icon="pencil" :href="route('finance.fee-types.edit', $type->id)" wire:navigate />
                                     
                                     <flux:modal.trigger name="delete-feetype-{{ $type->id }}">
-                                        <flux:button variant="ghost" size="sm" icon="trash" />
+                                        <flux:button variant="ghost" size="sm" icon="trash" class="text-red-500" />
                                     </flux:modal.trigger>
 
-                                    <flux:modal name="delete-feetype-{{ $type->id }}" class="min-w-[22rem]">
+                                    <flux:modal name="delete-feetype-{{ $type->id }}" class="min-w-[22rem] text-left">
                                         <div class="space-y-6">
                                             <div>
                                                 <flux:heading size="lg">{{ __('Hapus Jenis Tagihan?') }}</flux:heading>
-                                                <flux:subheading>{{ __('Tindakan ini akan menghapus master data tagihan ini.') }}</flux:subheading>
+                                                <flux:subheading>{{ __('Tindakan ini akan menghapus master data tagihan ini secara permanen.') }}</flux:subheading>
                                             </div>
                                             <div class="flex gap-2">
                                                 <flux:spacer />

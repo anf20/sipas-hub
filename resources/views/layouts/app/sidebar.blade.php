@@ -29,10 +29,10 @@
 
                 @hasanyrole(['Super Admin', 'Admin Keuangan'])
                 <flux:sidebar.group :heading="__('Keuangan')" class="grid">
-                    <flux:sidebar.item icon="chart-pie" :href="route('finance.hub')" :current="request()->routeIs('finance.hub')" wire:navigate>
-                        {{ __('Ringkasan Keuangan') }}
+                    <flux:sidebar.item icon="chart-bar-square" :href="route('finance.hub')" :current="request()->routeIs('finance.hub')" wire:navigate>
+                        {{ __('Laporan Keuangan') }}
                     </flux:sidebar.item>
-                    <flux:sidebar.item icon="academic-cap" :href="route('finance.spp.index')" :current="request()->routeIs('finance.spp.index')" wire:navigate>
+                    <flux:sidebar.item icon="banknotes" :href="route('finance.spp.index')" :current="request()->routeIs('finance.spp.*')" wire:navigate>
                         {{ __('Manajemen SPP') }}
                     </flux:sidebar.item>
                     <flux:sidebar.item icon="document-text" :href="route('finance.fee-types.index')" :current="request()->routeIs('finance.fee-types.index')" wire:navigate>

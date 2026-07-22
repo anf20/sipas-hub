@@ -74,6 +74,15 @@ class SppIndex extends Component
         $endYear = $startYear + 1;
         $name = "SPP Tahun Ajaran {$startYear}/{$endYear}";
 
+        $isAlreadyGenerated = FeeType::where('category', 'SPP')
+            ->where('name', $name)
+            ->exists();
+
+        if ($isAlreadyGenerated) {
+            \Flux::toast(__("SPP untuk {$name} sudah dibuat sebelumnya!"), variant: 'danger');
+            return;
+        }
+
         // 1. Create the billing event record
         $feeType = FeeType::create([
             'name' => $name,
@@ -194,8 +203,13 @@ class SppIndex extends Component
         $sppLastMonthUnpaid = (float) (clone $sppLastMonthQuery)->where('status', 'unpaid')->sum('amount');
         $sppLastMonthUnpaidCount = (clone $sppLastMonthQuery)->where('status', 'unpaid')->count();
 
+        $isCurrentYearGenerated = FeeType::where('category', 'SPP')
+            ->where('name', "SPP Tahun Ajaran {$activeStartYear}/{$activeEndYear}")
+            ->exists();
+
         return view('livewire.pages.finance.spp-index', [
             'activeAcademicYearName' => "Tahun Ajaran {$activeStartYear}/{$activeEndYear}",
+            'isCurrentYearGenerated' => $isCurrentYearGenerated,
             'sppBatches' => FeeType::where('category', 'SPP')->latest()->get(),
             'sppMonthlyTable' => $sppMonthlyTable,
             'sppTotalInvoiced' => $sppTotalInvoiced,

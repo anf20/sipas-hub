@@ -129,12 +129,15 @@
                         </flux:radio.group>
                     </div>
                     <div class="flex gap-2 items-center">
-                        <flux:modal.trigger name="adjust-spp-modal">
-                            <flux:button variant="subtle" icon="currency-dollar">{{ __('Sesuaikan Nominal SPP') }}</flux:button>
-                        </flux:modal.trigger>
-                        <flux:modal.trigger name="generate-spp-modal">
-                            <flux:button variant="primary">{{ __('Mulai Tahun Ajaran Baru') }}</flux:button>
-                        </flux:modal.trigger>
+                        @if($isCurrentYearGenerated)
+                            <flux:modal.trigger name="adjust-spp-modal">
+                                <flux:button variant="primary" icon="currency-dollar">{{ __('Sesuaikan Nominal SPP') }}</flux:button>
+                            </flux:modal.trigger>
+                        @else
+                            <flux:modal.trigger name="generate-spp-modal">
+                                <flux:button variant="primary" icon="sparkles">{{ __('Mulai Tahun Ajaran Baru') }}</flux:button>
+                            </flux:modal.trigger>
+                        @endif
                     </div>
                 </div>
 
