@@ -21,8 +21,17 @@
 
                 @hasanyrole(['Super Admin', 'Admin Akademik'])
                 <flux:sidebar.group :heading="__('Akademik')" class="grid">
-                    <flux:sidebar.item icon="building-library" :href="route('academic.hub')" :current="request()->routeIs('academic.*')" wire:navigate>
-                        {{ __('Manajemen Akademik') }}
+                    <flux:sidebar.item icon="building-library" :href="route('academic.dashboard')" :current="request()->routeIs('academic.dashboard')" wire:navigate>
+                        {{ __('Dashboard Akademik') }}
+                    </flux:sidebar.item>
+                    <flux:sidebar.item icon="users" :href="route('academic.students.index')" :current="request()->routeIs('academic.students.*')" wire:navigate>
+                        {{ __('Data Siswa') }}
+                    </flux:sidebar.item>
+                    <flux:sidebar.item icon="building-office-2" :href="route('academic.classes.index')" :current="request()->routeIs('academic.classes.*')" wire:navigate>
+                        {{ __('Manajemen Kelas') }}
+                    </flux:sidebar.item>
+                    <flux:sidebar.item icon="calendar-days" :href="route('academic.years.index')" :current="request()->routeIs('academic.years.*')" wire:navigate>
+                        {{ __('Tahun Ajaran') }}
                     </flux:sidebar.item>
                 </flux:sidebar.group>
                 @endhasanyrole
@@ -74,6 +83,9 @@
                     </flux:sidebar.item>
                     <flux:sidebar.item icon="arrow-path" :href="route('management.recovery')" :current="request()->routeIs('management.recovery')" wire:navigate>
                         {{ __('Pusat Pemulihan') }}
+                    </flux:sidebar.item>
+                    <flux:sidebar.item icon="bell-alert" :href="route('settings.notifications')" :current="request()->routeIs('settings.notifications')" wire:navigate>
+                        {{ __('Pusat Notifikasi') }}
                     </flux:sidebar.item>
                 </flux:sidebar.group>
                 @endhasrole

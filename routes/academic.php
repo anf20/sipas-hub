@@ -12,12 +12,10 @@ use App\Livewire\Pages\Academic\StudentShow;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware(['auth', 'verified'])->prefix('academic')->name('academic.')->group(function () {
-    Route::get('/', AcademicHub::class)->name('hub');
-
-    // Keep original index routes for test compatibility, but they can redirect to hub
-    Route::get('students', fn () => redirect()->route('academic.hub', ['tab' => 'students']))->name('students.index');
-    Route::get('classes', fn () => redirect()->route('academic.hub', ['tab' => 'classes']))->name('classes.index');
-    Route::get('years', fn () => redirect()->route('academic.hub', ['tab' => 'years']))->name('years.index');
+    Route::get('/', \App\Livewire\Pages\Academic\AcademicDashboard::class)->name('dashboard');
+    Route::get('students', \App\Livewire\Pages\Academic\StudentIndex::class)->name('students.index');
+    Route::get('classes', \App\Livewire\Pages\Academic\ClassIndex::class)->name('classes.index');
+    Route::get('years', \App\Livewire\Pages\Academic\AcademicYearIndex::class)->name('years.index');
 
     Route::get('students/create', StudentCreate::class)->name('students.create');
     Route::get('students/{student}', StudentShow::class)->name('students.show');

@@ -86,7 +86,8 @@ class FinancialReport extends Component
     protected function getFilteredInvoicesQuery()
     {
         // Gunakan due_date alih-alih created_at agar tagihan bulan depan tidak masuk hitungan "Target"
-        $query = Invoice::whereBetween('due_date', [$this->startDate, $this->endDate]);
+        $query = Invoice::whereDate('due_date', '>=', $this->startDate)
+                        ->whereDate('due_date', '<=', $this->endDate);
 
         if ($this->category !== 'all') {
             $query->whereHas('feeType', function ($q) {
@@ -109,7 +110,7 @@ class FinancialReport extends Component
         // Pembayaran di muka: Pembayaran yang masuk di periode ini, tapi untuk invoice yang jatuh temponya masih di masa depan
         $advancePayment = (clone $this->getFilteredPaymentsQuery())
             ->whereHas('invoice', function ($q) {
-                $q->where('due_date', '>', $this->endDate);
+                $q->whereDate('due_date', '>', $this->endDate);
             })->sum('amount');
 
         // Tunggakan Jatuh Tempo: Semua invoice unpaid yang due_date-nya sudah lewat dari endDate (akumulasi hutang lama)
@@ -129,7 +130,7 @@ class FinancialReport extends Component
         $totalTunggakanJatuhTempo = $tunggakanQuery->sum('amount');
         
         // Tagihan Masa Depan: Invoice yang belum jatuh tempo (due_date > endDate) yang berstatus unpaid/inactive
-        $tagihanMasaDepan = Invoice::where('due_date', '>', $this->endDate)
+        $tagihanMasaDepan = Invoice::whereDate('due_date', '>', $this->endDate)
             ->whereIn('status', ['unpaid', 'inactive'])
             ->sum('amount');
 

@@ -22,4 +22,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
             ),
         )
         ->name('security.edit');
+
+    Route::get('settings/notifications', \App\Livewire\Pages\Settings\NotificationCenter::class)->name('settings.notifications');
 });

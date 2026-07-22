@@ -72,7 +72,8 @@ class FinanceReportController extends Controller
         }
 
         // 2. FILTERED INVOICES QUERY
-        $invoicesQuery = \App\Models\Invoice::whereBetween('created_at', [$start, $end]);
+        $invoicesQuery = \App\Models\Invoice::whereDate('due_date', '>=', $startDate)
+            ->whereDate('due_date', '<=', $endDate);
         if ($category !== 'all') {
             $invoicesQuery->whereHas('feeType', function ($q) use ($category) {
                 if ($category === 'SPP') {

@@ -1,76 +1,72 @@
-<div class="flex h-full w-full flex-1 flex-col gap-4 rounded-xl">
+<div class="flex h-full w-full flex-1 flex-col gap-6 rounded-xl">
     <flux:header>
-        <flux:heading size="xl">{{ __('Data Siswa') }}</flux:heading>
-        <flux:spacer />
-        <div class="hidden md:block font-bold text-sm text-slate-700 dark:text-zinc-300">
-            {{ \Carbon\Carbon::now()->translatedFormat('d F Y') }}
-        </div>
+        <flux:breadcrumbs>
+            <flux:breadcrumbs.item href="{{ route('academic.dashboard') }}" wire:navigate>{{ __('Akademik') }}</flux:breadcrumbs.item>
+            <flux:breadcrumbs.item>{{ __('Data Siswa') }}</flux:breadcrumbs.item>
+        </flux:breadcrumbs>
     </flux:header>
 
-    <flux:main>
-        <div class="space-y-4">
-             <flux:button :href="route('academic.students.create')" variant="primary" icon="plus" wire:navigate>{{ __('Tambah Siswa') }}</flux:button>
-             
-             <flux:table>
+    <div class="space-y-4">
+        <div class="flex justify-between items-center">
+            <flux:heading size="xl">{{ __('Daftar Siswa') }}</flux:heading>
+            <flux:button :href="route('academic.students.create')" variant="primary" icon="plus" wire:navigate>{{ __('Tambah') }}</flux:button>
+        </div>
+
+        <!-- Filters -->
+        <div class="flex flex-col md:flex-row gap-4">
+            <div class="flex-1">
+                <flux:input wire:model.live.debounce.300ms="search" placeholder="{{ __('Cari nama atau NIS...') }}" icon="magnifying-glass" clearable />
+            </div>
+            <div class="w-full md:w-64">
+                <flux:select wire:model.live="classFilter" placeholder="{{ __('Semua Kelas') }}" clearable>
+                    @foreach($allClasses as $class)
+                        <flux:select.option :value="$class->id">{{ $class->name }}</flux:select.option>
+                    @endforeach
+                </flux:select>
+            </div>
+        </div>
+
+        <flux:card class="p-0 overflow-hidden">
+            <flux:table>
                 <flux:table.columns>
                     <flux:table.column>{{ __('NIS') }}</flux:table.column>
                     <flux:table.column>{{ __('Nama') }}</flux:table.column>
-                    <flux:table.column>{{ __('Tingkat / Kelas') }}</flux:table.column>
-                    <flux:table.column>{{ __('Gender') }}</flux:table.column>
+                    <flux:table.column>{{ __('Kelas') }}</flux:table.column>
                     <flux:table.column>{{ __('Status') }}</flux:table.column>
                     <flux:table.column></flux:table.column>
                 </flux:table.columns>
-
                 <flux:table.rows>
-                    @foreach($students as $student)
-                        <flux:table.row :key="$student->id">
+                    @forelse($students as $student)
+                        <flux:table.row :key="'student-'.$student->id">
                             <flux:table.cell>{{ $student->nis }}</flux:table.cell>
                             <flux:table.cell font-weight="medium">{{ $student->name }}</flux:table.cell>
-                            <flux:table.cell>
-                                <div class="font-medium">{{ __('Tingkat') }} {{ $student->current_grade }}</div>
-                                <div class="text-xs text-zinc-500">
-                                    {{ $student->school_class_id ? $student->schoolClass->name : __('Belum Ada Rombel') }}
-                                </div>
-                            </flux:table.cell>
-                            <flux:table.cell>{{ $student->gender }}</flux:table.cell>
+                            <flux:table.cell>{{ $student->schoolClass?->name ?? '-' }}</flux:table.cell>
                             <flux:table.cell>
                                 <flux:badge :color="$student->status === 'aktif' ? 'green' : 'gray'">
                                     {{ ucfirst($student->status) }}
                                 </flux:badge>
                             </flux:table.cell>
                             <flux:table.cell>
-                                <div class="flex gap-2">
+                                <div class="flex gap-2 justify-end">
+                                    <flux:button variant="ghost" size="sm" icon="eye" :href="route('academic.students.show', $student->id)" wire:navigate />
                                     <flux:button variant="ghost" size="sm" icon="pencil" :href="route('academic.students.edit', $student->id)" wire:navigate />
-                                    
-                                    <flux:modal.trigger name="delete-student-{{ $student->id }}">
-                                        <flux:button variant="ghost" size="sm" icon="trash" />
-                                    </flux:modal.trigger>
-
-                                    <flux:modal name="delete-student-{{ $student->id }}" class="min-w-[22rem]">
-                                        <div class="space-y-6">
-                                            <div>
-                                                <flux:heading size="lg">{{ __('Hapus Data Siswa?') }}</flux:heading>
-                                                <flux:subheading>{{ __('Siswa akan dinonaktifkan (Soft Delete).') }}</flux:subheading>
-                                            </div>
-                                            <div class="flex gap-2">
-                                                <flux:spacer />
-                                                <flux:modal.close>
-                                                    <flux:button variant="ghost">{{ __('Batal') }}</flux:button>
-                                                </flux:modal.close>
-                                                <flux:button variant="danger" wire:click="delete({{ $student->id }})" wire:loading.attr="disabled">{{ __('Hapus') }}</flux:button>
-                                            </div>
-                                        </div>
-                                    </flux:modal>
+                                    <flux:button variant="ghost" size="sm" icon="trash" wire:click="deleteStudent({{ $student->id }})" wire:confirm="{{ __('Hapus data siswa ini?') }}" />
                                 </div>
                             </flux:table.cell>
                         </flux:table.row>
-                    @endforeach
+                    @empty
+                        <flux:table.row>
+                            <flux:table.cell colspan="5" class="text-center py-6 text-zinc-500">
+                                {{ __('Tidak ada data siswa yang ditemukan.') }}
+                            </flux:table.cell>
+                        </flux:table.row>
+                    @endforelse
                 </flux:table.rows>
-             </flux:table>
+            </flux:table>
+        </flux:card>
 
-             @if($students->isEmpty())
-                <flux:text class="text-center py-8">{{ __('Belum ada data siswa.') }}</flux:text>
-             @endif
+        <div class="mt-4">
+            {{ $students->links() }}
         </div>
-    </flux:main>
+    </div>
 </div>

@@ -155,7 +155,9 @@ class WhatsappBlastFee extends Component
             $this->updateBatchStatus();
         }
 
-        $logsQuery = WhatsappLog::with('user')->orderBy('created_at', 'desc');
+        $logsQuery = WhatsappLog::with('user')
+            ->where('fee_type_id', $this->feeType->id)
+            ->orderBy('created_at', 'desc');
         
         if ($this->search) {
             $logsQuery->where(function($q) {

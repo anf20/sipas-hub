@@ -8,6 +8,7 @@ class WhatsappLog extends Model
 {
     protected $fillable = [
         'user_id',
+        'fee_type_id',
         'batch_id',
         'phone',
         'status',
@@ -22,5 +23,10 @@ class WhatsappLog extends Model
     public function user()
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function feeType()
+    {
+        return $this->belongsTo(FeeType::class);
     }
 }

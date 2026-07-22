@@ -123,6 +123,7 @@ class SendPaymentWhatsappNotification implements ShouldQueue
 
         WhatsappLog::create([
             'user_id' => $this->userId,
+            'fee_type_id' => $firstInvoice ? $firstInvoice->fee_type_id : null,
             'batch_id' => $this->batchId, // Mengambil ID dari Job Batch
             'phone' => $response['target'] ?? $user->phone,
             'status' => $status,
@@ -138,8 +139,11 @@ class SendPaymentWhatsappNotification implements ShouldQueue
 
     private function logFailed(string $phone, string $reason)
     {
+        $feeTypeId = Invoice::whereIn('id', $this->invoiceIds)->value('fee_type_id');
+        
         WhatsappLog::create([
             'user_id' => $this->userId,
+            'fee_type_id' => $feeTypeId,
             'batch_id' => $this->batchId ?? null,
             'phone' => $phone,
             'status' => 'failed',
