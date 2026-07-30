@@ -7,7 +7,6 @@ use App\Models\Student;
 use App\Models\User;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
-use Faker\Factory as Faker;
 
 class StudentSeeder extends Seeder
 {
@@ -16,70 +15,115 @@ class StudentSeeder extends Seeder
      */
     public function run(): void
     {
-        // Gunakan Faker dengan locale Indonesia
-        $faker = Faker::create('id_ID');
-        
-        $classes = SchoolClass::with('academicYear')->get();
+        $classes = SchoolClass::with('academicYear')
+            ->whereHas('academicYear', function ($query) {
+                $query->where('is_active', true);
+            })->get();
 
         if ($classes->isEmpty()) {
-            $this->command->error('Pastikan SchoolFoundationSeeder sudah membuat kelas.');
+            $this->command->error('Pastikan SchoolFoundationSeeder sudah membuat kelas aktif.');
+
             return;
         }
 
-        $allStudentsData = [];
-        
-        // 1. Tentukan jumlah siswa (10-15) untuk setiap kelas
-        foreach ($classes as $schoolClass) {
-            $studentCount = rand(10, 15);
-            for ($i = 0; $i < $studentCount; $i++) {
-                $allStudentsData[] = [
-                    'class' => $schoolClass,
-                    // Buat nama unik Indonesia
-                    'name' => $faker->unique()->name(),
-                ];
-            }
-        }
+        // Arrays of Islamic names
+        $firstNamesMale = [
+            'Muhammad', 'Ahmad', 'Ali', 'Utsman', 'Umar', 'Abu Bakar', 'Hasan', 'Husain', 'Hamzah',
+            'Abdurrahman', 'Abdullah', 'Zaid', 'Khalid', 'Thariq', 'Anas', 'Bilal', 'Saad', 'Salman',
+            'Luqman', 'Yusuf', 'Ibrahim', 'Ismail', 'Yahya', 'Zakaria', 'Yunus', 'Ayyub', 'Harun',
+            'Sulaeman', 'Idris', 'Nuh', 'Luth', 'Hud', 'Shaleh', 'Adam', 'Fathir', 'Gibran', 'Rayan',
+            'Zafran', 'Fathan', 'Zayan', 'Afiq', 'Arfan', 'Daffa', 'Faris', 'Nabil', 'Raffa', 'Hafizh',
+            'Raziq', 'Fatih', 'Syamil',
+        ];
 
-        $totalStudents = count($allStudentsData);
-        // 80% dari total siswa akan memiliki akun wali murid yang unik (1 anak = 1 ortu)
-        // Sisa 20% anak akan menggunakan akun wali murid yang sudah ada (kakak-adik)
-        $totalParents = (int) round($totalStudents * 0.8);
-        
-        $this->command->info("Membuat $totalStudents Siswa dan $totalParents Wali Murid...");
+        $firstNamesFemale = [
+            'Aisyah', 'Fathimah', 'Khadijah', 'Zainab', 'Ruqayyah', 'Ummu Kultsum', 'Siti', 'Mariyam',
+            'Asiyah', 'Hajar', 'Sarah', 'Kamilah', 'Safiyyah', 'Hafshah', 'Saudah', 'Juwayriyah',
+            'Maimunah', 'Rayhanah', 'Shofia', 'Naura', 'Alya', 'Salma', 'Zahra', 'Laila', 'Nabila',
+            'Yasmin', 'Farida', 'Wardah', 'Zhafira', 'Balqis', 'Alifa', 'Amira', 'Hana', 'Rania',
+            'Talita', 'Faras', 'Keysha', 'Sabrina', 'Zaskia', 'Adiba', 'Azza',
+        ];
 
-        // 2. Buat Akun Wali Murid
+        $lastNames = [
+            'Al-Fatih', 'Al-Ghifari', 'Al-Farabi', 'Al-Khawarizmi', 'Al-Ghazali', 'Ar-Rasyid', 'Ad-Din',
+            'Ramadhan', 'Maulana', 'Firdaus', 'Al-Bukhari', 'Al-Majid', 'Sholeh', 'Sholehah', 'Pratama',
+            'Hidayat', 'Putra', 'Putri', 'Sari', 'Utami', 'Anwar', 'Zulkarnain', 'Nugroho', 'Wibowo',
+        ];
+
+        $generateIslamicName = function ($gender) use ($firstNamesMale, $firstNamesFemale, $lastNames) {
+            $firstName = $gender === 'L'
+                ? $firstNamesMale[array_rand($firstNamesMale)]
+                : $firstNamesFemale[array_rand($firstNamesFemale)];
+            $lastName = $lastNames[array_rand($lastNames)];
+
+            return $firstName.' '.$lastName;
+        };
+
+        $this->command->info('Membuat 80 Wali Murid dengan Nama Islami...');
+
+        // Create exactly 80 parents
         $parents = [];
-        for ($i = 1; $i <= $totalParents; $i++) {
-            $parentName = $faker->unique()->name();
+        for ($i = 1; $i <= 80; $i++) {
+            $parentGender = rand(0, 1) ? 'L' : 'P';
+            $parentName = $generateIslamicName($parentGender);
+            $phone = '628'.rand(111111111, 999999999);
+
             $parent = User::factory()->create([
                 'name' => $parentName,
-                // Email format yang mudah diingat untuk demo (wali1@test.com, wali2@test.com, dsb)
-                'email' => "wali{$i}@test.com", 
+                'email' => "wali{$i}@test.com",
+                'phone' => $phone,
                 'password' => Hash::make('password'),
             ]);
             $parent->assignRole('Orang Tua');
             $parents[] = $parent;
         }
 
-        // 3. Buat Data Siswa dan kaitkan dengan Wali Murid
-        foreach ($allStudentsData as $index => $studentData) {
-            if ($index < $totalParents) {
-                // 80% Siswa pertama memiliki orang tua sendiri yang unik
-                $assignedParent = $parents[$index];
-            } else {
-                // 20% Siswa sisanya mengambil orang tua acak dari yang sudah dibuat (simulasi kakak-adik)
-                $assignedParent = $parents[array_rand($parents)];
-            }
+        // We have 80 parents.
+        // 20 parents will have exactly 2 students (40 students).
+        // 60 parents will have exactly 1 student (60 students).
+        // Total students = 100.
+        $studentAssignments = [];
+
+        $shuffledParents = $parents;
+        shuffle($shuffledParents);
+
+        $doubleStudentParents = array_slice($shuffledParents, 0, 20);
+        $singleStudentParents = array_slice($shuffledParents, 20, 60);
+
+        // Build list of students with parent associations
+        foreach ($doubleStudentParents as $parent) {
+            $studentAssignments[] = ['parent' => $parent];
+            $studentAssignments[] = ['parent' => $parent];
+        }
+        foreach ($singleStudentParents as $parent) {
+            $studentAssignments[] = ['parent' => $parent];
+        }
+
+        $totalStudents = count($studentAssignments);
+        $this->command->info("Membuat exactly {$totalStudents} Siswa (Santri)...");
+
+        // Shuffle students so siblings are not necessarily created adjacently or in same classes
+        shuffle($studentAssignments);
+
+        // Assign classes evenly
+        $classCount = $classes->count();
+        foreach ($studentAssignments as $index => $assignment) {
+            $assignedClass = $classes[$index % $classCount];
+            $gender = rand(0, 1) ? 'L' : 'P';
+            $studentName = $generateIslamicName($gender);
 
             Student::factory()->create([
-                'name' => $studentData['name'],
-                'parent_user_id' => $assignedParent->id,
-                'school_class_id' => $studentData['class']->id,
-                'current_grade' => $studentData['class']->grade, // FIX: Mengisi jenjang kelas agar grafik tampil
-                'entry_year' => $studentData['class']->academicYear->start_date
-                    ? date('Y', strtotime($studentData['class']->academicYear->start_date))
+                'name' => $studentName,
+                'parent_user_id' => $assignment['parent']->id,
+                'school_class_id' => $assignedClass->id,
+                'current_grade' => $assignedClass->grade,
+                'gender' => $gender,
+                'entry_year' => $assignedClass->academicYear->start_date
+                    ? date('Y', strtotime($assignedClass->academicYear->start_date))
                     : date('Y'),
             ]);
         }
+
+        $this->command->info('Seeding data Santri & Wali Murid selesai dengan sukses!');
     }
 }

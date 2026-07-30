@@ -67,7 +67,7 @@ it('can delete academic year without classes', function () {
 
     Livewire::actingAs($this->user)
         ->test(AcademicYearIndex::class)
-        ->call('delete', $newYear->id);
+        ->call('deleteYear', $newYear->id);
 
     $this->assertDatabaseMissing('academic_years', ['id' => $newYear->id]);
 });
@@ -94,7 +94,7 @@ it('can delete class without students', function () {
 
     Livewire::actingAs($this->user)
         ->test(ClassIndex::class)
-        ->call('delete', $emptyClass->id);
+        ->call('deleteClass', $emptyClass->id);
 
     $this->assertDatabaseMissing('school_classes', ['id' => $emptyClass->id]);
 });
@@ -115,7 +115,7 @@ it('can update student', function () {
 it('can soft delete student', function () {
     Livewire::actingAs($this->user)
         ->test(StudentIndex::class)
-        ->call('delete', $this->student->id);
+        ->call('deleteStudent', $this->student->id);
 
     $this->assertSoftDeleted('students', ['id' => $this->student->id]);
 });

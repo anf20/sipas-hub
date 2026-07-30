@@ -1,8 +1,8 @@
 <div class="flex h-full w-full flex-1 flex-col gap-4 rounded-xl">
     <flux:header>
         <flux:breadcrumbs>
-            <flux:breadcrumbs.item href="{{ route('academic.hub') }}" wire:navigate>{{ __('Akademik') }}</flux:breadcrumbs.item>
-            <flux:breadcrumbs.item href="{{ route('academic.hub', ['tab' => 'students']) }}" wire:navigate>{{ __('Data Siswa') }}</flux:breadcrumbs.item>
+            <flux:breadcrumbs.item href="{{ route('academic.dashboard') }}" wire:navigate>{{ __('Akademik') }}</flux:breadcrumbs.item>
+            <flux:breadcrumbs.item href="{{ route('academic.students.index') }}" wire:navigate>{{ __('Data Siswa') }}</flux:breadcrumbs.item>
             <flux:breadcrumbs.item>{{ __('Detail Siswa') }}</flux:breadcrumbs.item>
         </flux:breadcrumbs>
         <flux:spacer />
@@ -17,7 +17,7 @@
                 <flux:heading size="xl">{{ __('Profil Siswa') }}</flux:heading>
                 <div class="flex gap-2">
                     <flux:button :href="route('academic.students.edit', $student->id)" icon="pencil" wire:navigate>{{ __('Edit') }}</flux:button>
-                    <flux:button :href="route('academic.hub', ['tab' => 'students'])" variant="ghost" wire:navigate>{{ __('Kembali') }}</flux:button>
+                    <flux:button :href="route('academic.students.index')" variant="ghost" wire:navigate>{{ __('Kembali') }}</flux:button>
                 </div>
             </div>
 

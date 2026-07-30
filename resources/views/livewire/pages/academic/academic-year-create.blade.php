@@ -1,8 +1,8 @@
 <div class="flex h-full w-full flex-1 flex-col gap-4 rounded-xl">
     <flux:header>
         <flux:breadcrumbs>
-            <flux:breadcrumbs.item href="{{ route('academic.hub') }}" wire:navigate>{{ __('Akademik') }}</flux:breadcrumbs.item>
-            <flux:breadcrumbs.item href="{{ route('academic.hub', ['tab' => 'years']) }}" wire:navigate>{{ __('Tahun Ajaran') }}</flux:breadcrumbs.item>
+            <flux:breadcrumbs.item href="{{ route('academic.dashboard') }}" wire:navigate>{{ __('Akademik') }}</flux:breadcrumbs.item>
+            <flux:breadcrumbs.item href="{{ route('academic.years.index') }}" wire:navigate>{{ __('Tahun Ajaran') }}</flux:breadcrumbs.item>
             <flux:breadcrumbs.item>{{ __('Tambah Baru') }}</flux:breadcrumbs.item>
         </flux:breadcrumbs>
         <flux:spacer />

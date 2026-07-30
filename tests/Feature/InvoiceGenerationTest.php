@@ -1,7 +1,8 @@
 <?php
 
 use App\Jobs\GenerateInvoices;
-use App\Livewire\Pages\Finance\FinanceHub;
+use App\Jobs\GenerateYearlyInvoiceJob;
+use App\Livewire\Pages\Finance\SppIndex;
 use App\Models\AcademicYear;
 use App\Models\FeeType;
 use App\Models\Invoice;
@@ -52,15 +53,13 @@ it('dispatches the generation job via finance hub', function () {
     Queue::fake();
 
     Livewire::actingAs($this->user)
-        ->test(FinanceHub::class)
-        ->set('month', 5)
+        ->test(SppIndex::class)
         ->set('year', 2025)
         ->set('default_amount', 200000)
-        ->set('due_date', '2025-05-30')
         ->call('generateSpp')
         ->assertHasNoErrors();
 
-    Queue::assertPushed(GenerateInvoices::class);
+    Queue::assertPushed(GenerateYearlyInvoiceJob::class);
 });
 
 it('generates invoices for all active students', function () {

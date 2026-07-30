@@ -59,6 +59,9 @@
                     <flux:sidebar.item icon="banknotes" :href="route('finance.invoice.manual-payment')" :current="request()->routeIs('finance.invoice.manual-payment')" wire:navigate>
                         {{ __('Pembayaran Manual') }}
                     </flux:sidebar.item>
+                    <flux:sidebar.item icon="chat-bubble-left-right" :href="route('finance.whatsapp-broadcast.general')" :current="request()->routeIs('finance.whatsapp-broadcast.general')" wire:navigate>
+                        {{ __('Broadcast Pengumuman') }}
+                    </flux:sidebar.item>
                 </flux:sidebar.group>
                 @endhasanyrole
 
@@ -83,6 +86,9 @@
                     </flux:sidebar.item>
                     <flux:sidebar.item icon="arrow-path" :href="route('management.recovery')" :current="request()->routeIs('management.recovery')" wire:navigate>
                         {{ __('Pusat Pemulihan') }}
+                    </flux:sidebar.item>
+                    <flux:sidebar.item icon="shield-check" :href="route('management.audit_logs')" :current="request()->routeIs('management.audit_logs')" wire:navigate>
+                        {{ __('Log Audit') }}
                     </flux:sidebar.item>
                     <flux:sidebar.item icon="bell-alert" :href="route('settings.notifications')" :current="request()->routeIs('settings.notifications')" wire:navigate>
                         {{ __('Pusat Notifikasi') }}

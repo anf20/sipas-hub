@@ -77,10 +77,6 @@ foreach ($routes as $name => $path) {
         $redirectRoutes = [
             'home',
             'dashboard',
-            'academic.classes.index',
-            'academic.students.index',
-            'academic.years.index',
-            'finance.fee-types.index',
         ];
 
         if (in_array($name, $redirectRoutes)) {

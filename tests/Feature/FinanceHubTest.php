@@ -1,6 +1,6 @@
 <?php
 
-use App\Livewire\Pages\Finance\FinanceHub;
+use App\Livewire\Pages\Finance\SppIndex;
 use App\Models\User;
 use Database\Seeders\RoleSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -16,7 +16,7 @@ beforeEach(function () {
 
 test('it can generate spp without carbon error', function () {
     Livewire::actingAs($this->user)
-        ->test(FinanceHub::class)
+        ->test(SppIndex::class)
         ->set('month', '5') // String value like from a form
         ->set('year', 2026)
         ->set('default_amount', 250000)

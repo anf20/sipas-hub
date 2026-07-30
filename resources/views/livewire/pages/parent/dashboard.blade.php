@@ -14,11 +14,11 @@
             <span class="font-display-lg text-3xl font-semibold text-white">Rp {{ number_format($totalUnpaidBalance, 0, ',', '.') }}</span>
         </div>
         <div class="flex gap-3 items-center mt-4">
-            <flux:button :href="route('parent.invoices')" variant="primary" class="w-1/2 justify-center bg-secondary text-white border-none hover:bg-secondary/90 h-[52px]" wire:navigate>
+            <flux:button :href="route('parent.invoices')" variant="primary" class="w-1/2 justify-center bg-secondary text-white border-none hover:bg-secondary/90 h-13" wire:navigate>
                 <flux:icon.credit-card variant="outline" class="mr-2 size-5" />
                 {{ __('Bayar') }}
             </flux:button>
-            <flux:button :href="route('parent.invoices')" class="w-1/2 justify-center bg-white/20 text-white border-none hover:bg-white/30 h-[52px]" wire:navigate>
+            <flux:button :href="route('parent.invoices')" class="w-1/2 justify-center bg-white/20 text-white border-none hover:bg-white/30 h-13" wire:navigate>
                 {{ __('Detail') }}
             </flux:button>
         </div>
@@ -60,9 +60,12 @@
         </div>
         <div class="flex flex-col gap-3">
             @forelse($upcomingInvoices as $invoice)
-                <div class="bg-surface-container-lowest p-normal rounded-xl border border-outline-variant shadow-sm flex items-center justify-between hover:bg-surface-container transition-colors group">
+                @php
+                    $isOverdue = $invoice->status === 'unpaid' && $invoice->due_date->isPast();
+                @endphp
+                <div class="{{ $isOverdue ? 'bg-red-50/70 dark:bg-red-950/10 border-red-200 dark:border-red-900/30 hover:bg-red-100/50 dark:hover:bg-red-950/20' : 'bg-surface-container-lowest border-outline-variant hover:bg-surface-container' }} p-normal rounded-xl border shadow-sm flex items-center justify-between transition-colors group">
                     <div class="flex items-center gap-normal">
-                        <div class="w-12 h-12 rounded-xl bg-surface-container-high flex flex-col items-center justify-center text-primary group-hover:bg-surface-container-highest transition-colors">
+                        <div class="w-12 h-12 rounded-xl {{ $isOverdue ? 'bg-red-100/60 dark:bg-red-900/20 text-red-700 dark:text-red-400' : 'bg-surface-container-high text-primary group-hover:bg-surface-container-highest' }} flex flex-col items-center justify-center transition-colors">
                             @php
                                 $category = strtolower($invoice->feeType->category);
                             @endphp
@@ -82,14 +85,14 @@
                         </div>
                     </div>
                     <div class="flex flex-col items-end">
-                        <span class="font-label-bold text-sm font-semibold text-primary">Rp {{ number_format($invoice->amount, 0, ',', '.') }}</span>
+                        <span class="font-label-bold text-sm font-semibold {{ $isOverdue ? 'text-red-700 dark:text-red-400' : 'text-primary' }}">Rp {{ number_format($invoice->amount, 0, ',', '.') }}</span>
                         @php
                             $daysLeft = (int) now()->startOfDay()->diffInDays($invoice->due_date->copy()->startOfDay(), false);
                         @endphp
                         @if($daysLeft >= 0)
                             <span class="font-caption text-xs text-error">{{ $daysLeft }} {{ __('hari lagi') }}</span>
                         @else
-                            <span class="font-caption text-xs text-error">{{ __('Terlambat') }}</span>
+                            <span class="font-caption text-xs text-error font-semibold">{{ __('Terlambat') }}</span>
                         @endif
                     </div>
                 </div>

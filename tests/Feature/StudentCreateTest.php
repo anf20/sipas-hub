@@ -38,7 +38,6 @@ it('can render the student create page', function () {
 it('can create a new student', function () {
     Livewire::actingAs($this->user)
         ->test(StudentCreate::class)
-        ->set('nis', '12345678')
         ->set('name', 'Budi Santoso')
         ->set('school_class_id', $this->class->id)
         ->set('gender', 'L')
@@ -48,7 +47,7 @@ it('can create a new student', function () {
         ->assertRedirect(route('academic.students.index'));
 
     $this->assertDatabaseHas('students', [
-        'nis' => '12345678',
+        'nis' => '240001',
         'name' => 'Budi Santoso',
         'school_class_id' => $this->class->id,
     ]);

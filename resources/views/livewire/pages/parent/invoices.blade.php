@@ -14,7 +14,7 @@
     @endphp
     <!-- Quick Summary Section (Highest Priority) -->
     @if($hasPayable)
-        <div class="bg-primary-container text-on-primary-container rounded-2xl p-large flex flex-col gap-normal shadow-xl sticky top-[76px] z-40 mx-1 mb-2 border border-white/10">
+        <div class="bg-primary-container text-on-primary-container rounded-2xl p-large flex flex-col gap-normal shadow-xl sticky top-19 z-40 mx-1 mb-2 border border-white/10">
             <div class="flex justify-between items-start px-1">
                 <div>
                     @if($isSelectMode)
@@ -36,7 +36,7 @@
                         wire:click="initiatePayment" 
                         variant="primary" 
                         icon="banknotes"
-                        class="w-full !bg-secondary !text-white border-none h-[52px] !rounded-xl"
+                        class="w-full bg-secondary! text-white! border-none h-13 rounded-xl!"
                         :disabled="empty($selectedInvoices)"
                     >
                         {{ __('Bayar Sekarang') }}
@@ -44,7 +44,7 @@
                     <flux:button 
                         wire:click="toggleSelectMode" 
                         variant="ghost" 
-                        class="w-full !text-white/80 hover:!text-white hover:!bg-white/10 h-[42px] !rounded-xl"
+                        class="w-full text-white/80! hover:text-white! hover:bg-white/10! h-10.5 rounded-xl!"
                     >
                         {{ __('Batal Pilih') }}
                     </flux:button>
@@ -53,7 +53,7 @@
                 <flux:button 
                     wire:click="toggleSelectMode" 
                     icon="check-badge"
-                    class="w-full !bg-white/10 !text-white hover:!bg-white/20 border-white/20 mt-2 h-[52px] !rounded-xl"
+                    class="w-full bg-white/10! text-white! hover:bg-white/20! border-white/20 mt-2 h-13 rounded-xl!"
                 >
                     {{ __('Pilih Beberapa Tagihan (Bayar Massal)') }}
                 </flux:button>
@@ -93,7 +93,7 @@
                         <flux:icon.user variant="outline" class="text-primary size-5" />
                     </div>
                     <h3 class="font-title-sm text-lg font-medium text-primary">{{ $studentName }}</h3>
-                    <div class="h-[1px] flex-1 bg-outline-variant opacity-50 ml-2"></div>
+                    <div class="h-px flex-1 bg-outline-variant opacity-50 ml-2"></div>
                 </div>
                 @php
                     $activeInvoices = $studentInvoices->where('status', '!=', 'inactive');
@@ -101,6 +101,9 @@
                 @endphp
                 <div class="flex flex-col gap-3">
                     @foreach($activeInvoices as $invoice)
+                        @php
+                            $isOverdue = $invoice->status === 'unpaid' && $invoice->due_date->isPast();
+                        @endphp
                         <div class="flex items-center gap-3">
                             @if($isSelectMode && in_array($invoice->status, ['unpaid', 'inactive']))
                                 <flux:checkbox wire:model.live="selectedInvoices" value="{{ $invoice->id }}" class="shrink-0" />
@@ -108,21 +111,21 @@
                             
                             <a 
                                 @if(!$isSelectMode) href="{{ route('parent.invoices.show', $invoice) }}" wire:navigate @endif
-                                class="bg-surface-container-lowest p-normal rounded-xl border border-outline-variant shadow-sm flex items-center justify-between hover:bg-surface-container transition-colors group cursor-pointer text-left flex-1"
+                                class="{{ $isOverdue ? 'bg-red-50/70 dark:bg-red-950/10 border-red-200 dark:border-red-900/30 hover:bg-red-100/50 dark:hover:bg-red-950/20' : 'bg-surface-container-lowest border-outline-variant hover:bg-surface-container' }} p-normal rounded-xl border shadow-sm flex items-center justify-between transition-colors group cursor-pointer text-left flex-1"
                             >
                                 <div class="flex items-center gap-normal text-left">
-                                    <div class="w-12 h-12 rounded-xl bg-surface-container flex items-center justify-center group-hover:bg-surface-container-highest transition-colors shrink-0">
+                                    <div class="w-12 h-12 rounded-xl {{ $isOverdue ? 'bg-red-100/60 dark:bg-red-900/20' : 'bg-surface-container group-hover:bg-surface-container-highest' }} flex items-center justify-center transition-colors shrink-0">
                                         @php
                                             $category = strtolower($invoice->feeType->category);
                                         @endphp
                                         @if($category === 'spp') 
-                                            <flux:icon.book-open variant="outline" class="size-5 text-primary" />
+                                            <flux:icon.book-open variant="outline" class="size-5 {{ $isOverdue ? 'text-red-700 dark:text-red-400' : 'text-primary' }}" />
                                         @elseif($category === 'seragam') 
-                                            <flux:icon.briefcase variant="outline" class="size-5 text-primary" />
+                                            <flux:icon.briefcase variant="outline" class="size-5 {{ $isOverdue ? 'text-red-700 dark:text-red-400' : 'text-primary' }}" />
                                         @elseif($category === 'kegiatan')
-                                            <flux:icon.calendar-days variant="outline" class="size-5 text-primary" />
+                                            <flux:icon.calendar-days variant="outline" class="size-5 {{ $isOverdue ? 'text-red-700 dark:text-red-400' : 'text-primary' }}" />
                                         @else 
-                                            <flux:icon.banknotes variant="outline" class="size-5 text-primary" />
+                                            <flux:icon.banknotes variant="outline" class="size-5 {{ $isOverdue ? 'text-red-700 dark:text-red-400' : 'text-primary' }}" />
                                         @endif
                                     </div>
                                     <div class="flex flex-col text-left">
@@ -141,7 +144,7 @@
                                     </div>
                                 </div>
                                 <div class="text-right flex flex-col items-end gap-1">
-                                    <p class="font-display-lg text-lg font-semibold text-primary">Rp {{ number_format($invoice->amount, 0, ',', '.') }}</p>
+                                    <p class="font-display-lg text-lg font-semibold {{ $isOverdue ? 'text-red-700 dark:text-red-400' : 'text-primary' }}">Rp {{ number_format($invoice->amount, 0, ',', '.') }}</p>
                                     @if($invoice->status === 'paid')
                                         <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-secondary-container text-on-secondary-container">
                                             {{ __('Sudah Bayar') }}
@@ -151,9 +154,15 @@
                                             {{ __('Bulan Depan') }}
                                         </span>
                                     @else
-                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-error-container text-on-error-container">
-                                            {{ __('Belum Bayar') }}
-                                        </span>
+                                        @if($isOverdue)
+                                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300">
+                                                {{ __('Jatuh Tempo') }}
+                                            </span>
+                                        @else
+                                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-error-container text-on-error-container">
+                                                {{ __('Belum Bayar') }}
+                                            </span>
+                                        @endif
                                     @endif
                                 </div>
                             </a>
@@ -194,7 +203,7 @@
                                     @foreach($showingInvoices as $invoice)
                                         <div class="flex items-center gap-3 relative">
                                             <!-- Fake disabled checkbox for UI consistency -->
-                                            <div class="shrink-0 flex items-center justify-center w-[18px] h-[18px] rounded-[4px] bg-primary text-white">
+                                            <div class="shrink-0 flex items-center justify-center w-4.5 h-4.5 rounded-sm bg-primary text-white">
                                                 <flux:icon.check variant="mini" class="size-3.5" />
                                             </div>
                                             
@@ -241,7 +250,7 @@
     </div>
 
     <!-- Confirmation Modal (Invoice Summary) -->
-    <flux:modal wire:model="showConfirmationModal" class="min-w-[350px] max-w-[500px]">
+    <flux:modal wire:model="showConfirmationModal" class="min-w-87.5 max-w-125">
         <div class="space-y-6">
             <div>
                 <flux:heading size="lg">{{ __('Ringkasan Pembayaran') }}</flux:heading>

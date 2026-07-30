@@ -22,31 +22,31 @@ it('can access the dashboard as admin', function () {
         ->assertSee('Dashboard');
 });
 
-it('can access the students index page (via redirect)', function () {
+it('can access the students index page', function () {
     $user = User::factory()->create(['email_verified_at' => now()]);
     $user->assignRole('Super Admin');
 
     actingAs($user)
         ->get(route('academic.students.index'))
-        ->assertRedirect();
+        ->assertOk();
 });
 
-it('can access the classes index page (via redirect)', function () {
+it('can access the classes index page', function () {
     $user = User::factory()->create(['email_verified_at' => now()]);
     $user->assignRole('Super Admin');
 
     actingAs($user)
         ->get(route('academic.classes.index'))
-        ->assertRedirect();
+        ->assertOk();
 });
 
-it('can access the fee types index page (via redirect)', function () {
+it('can access the fee types index page', function () {
     $user = User::factory()->create(['email_verified_at' => now()]);
     $user->assignRole('Super Admin');
 
     actingAs($user)
         ->get(route('finance.fee-types.index'))
-        ->assertRedirect();
+        ->assertOk();
 });
 
 it('displays the correct sidebar navigation groups for admin', function () {

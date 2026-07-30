@@ -1,6 +1,7 @@
 <?php
 
 use App\Livewire\Pages\Admin\RecoveryCenter;
+use App\Livewire\Pages\Management\AuditLogs;
 use App\Livewire\Pages\Management\UserCreate;
 use App\Livewire\Pages\Management\UserEdit;
 use App\Livewire\Pages\Management\UserIndex;
@@ -14,4 +15,5 @@ Route::middleware(['auth', 'verified', 'role:Super Admin'])->group(function () {
     Route::get('management/users/{user}/edit', UserEdit::class)->name('management.users.edit');
 
     Route::get('management/recovery', RecoveryCenter::class)->name('management.recovery');
+    Route::get('management/audit-logs', AuditLogs::class)->name('management.audit_logs');
 });

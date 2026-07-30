@@ -1,8 +1,8 @@
 <div class="flex h-full w-full flex-1 flex-col gap-4 rounded-xl">
     <flux:header>
         <flux:breadcrumbs>
-            <flux:breadcrumbs.item href="{{ route('academic.hub') }}" wire:navigate>{{ __('Akademik') }}</flux:breadcrumbs.item>
-            <flux:breadcrumbs.item href="{{ route('academic.hub', ['tab' => 'students']) }}" wire:navigate>{{ __('Data Siswa') }}</flux:breadcrumbs.item>
+            <flux:breadcrumbs.item href="{{ route('academic.dashboard') }}" wire:navigate>{{ __('Akademik') }}</flux:breadcrumbs.item>
+            <flux:breadcrumbs.item href="{{ route('academic.students.index') }}" wire:navigate>{{ __('Data Siswa') }}</flux:breadcrumbs.item>
             <flux:breadcrumbs.item>{{ __('Tambah Siswa') }}</flux:breadcrumbs.item>
         </flux:breadcrumbs>
         <flux:spacer />
@@ -17,15 +17,9 @@
                 <div class="space-y-6">
                     <flux:heading size="lg">{{ __('Informasi Pribadi Siswa') }}</flux:heading>
 
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div class="space-y-2">
-                            <flux:input wire:model="nis" label="{{ __('NIS') }}" placeholder="{{ __('Kosongkan untuk generate otomatis') }}" />
-                            <flux:error name="nis" />
-                        </div>
-                        <div class="space-y-2">
-                            <flux:input wire:model="name" label="{{ __('Nama Lengkap') }}" placeholder="Contoh: Budi Santoso" required />
-                            <flux:error name="name" />
-                        </div>
+                    <div class="space-y-2">
+                        <flux:input wire:model="name" label="{{ __('Nama Lengkap') }}" placeholder="Contoh: Budi Santoso" required />
+                        <flux:error name="name" />
                     </div>
 
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -71,7 +65,7 @@
                                 <flux:error name="parent_user_id" />
                             </div>
                             <flux:modal.trigger name="create-parent-modal">
-                                <flux:button icon="plus" class="mb-[2px]">{{ __('Baru') }}</flux:button>
+                                <flux:button icon="plus" class="mb-0.5">{{ __('Baru') }}</flux:button>
                             </flux:modal.trigger>
                         </div>
                     </div>

@@ -1,8 +1,8 @@
 <div class="flex h-full w-full flex-1 flex-col gap-4 rounded-xl">
     <flux:header>
         <flux:breadcrumbs>
-            <flux:breadcrumbs.item href="{{ route('academic.hub') }}" wire:navigate>{{ __('Akademik') }}</flux:breadcrumbs.item>
-            <flux:breadcrumbs.item href="{{ route('academic.hub', ['tab' => 'students']) }}" wire:navigate>{{ __('Data Siswa') }}</flux:breadcrumbs.item>
+            <flux:breadcrumbs.item href="{{ route('academic.dashboard') }}" wire:navigate>{{ __('Akademik') }}</flux:breadcrumbs.item>
+            <flux:breadcrumbs.item href="{{ route('academic.students.index') }}" wire:navigate>{{ __('Data Siswa') }}</flux:breadcrumbs.item>
             <flux:breadcrumbs.item>{{ __('Edit Siswa') }}</flux:breadcrumbs.item>
         </flux:breadcrumbs>
         <flux:spacer />
@@ -18,7 +18,7 @@
                     <flux:heading size="lg">{{ __('Edit Informasi Siswa') }}</flux:heading>
 
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <flux:input wire:model="nis" label="{{ __('NIS') }}" placeholder="12345678" required />
+                        <flux:input wire:model="nis" label="{{ __('NIS') }}" placeholder="12345678" disabled />
                         <flux:input wire:model="name" label="{{ __('Nama Lengkap') }}" placeholder="Contoh: Budi Santoso" required />
                     </div>
 

@@ -14,7 +14,7 @@ beforeEach(function () {
     $this->user = User::factory()->create();
 });
 
-it('can render fee type index (via redirect)', function () {
+it('can render fee type index successfully', function () {
     FeeType::create([
         'name' => 'Test Fee',
         'category' => 'SPP',
@@ -25,7 +25,7 @@ it('can render fee type index (via redirect)', function () {
 
     $this->actingAs($this->user)
         ->get(route('finance.fee-types.index'))
-        ->assertRedirect();
+        ->assertOk();
 });
 
 it('can create a fee type', function () {
