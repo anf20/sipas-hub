@@ -31,7 +31,8 @@
             </div>
 
             <!-- Table Section -->
-            <flux:table>
+            <flux:card class="p-0 overflow-hidden">
+                <flux:table>
                 <flux:table.columns>
                     <flux:table.column>{{ __('Waktu') }}</flux:table.column>
                     <flux:table.column>{{ __('Pengguna') }}</flux:table.column>
@@ -160,6 +161,7 @@
                     @endforelse
                 </flux:table.rows>
             </flux:table>
+            </flux:card>
 
             <!-- Pagination -->
             <div class="mt-4">

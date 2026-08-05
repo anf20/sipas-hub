@@ -28,7 +28,8 @@
                 </div>
             @endif
 
-             <flux:table>
+             <flux:card class="p-0 overflow-hidden">
+                 <flux:table>
                 <flux:table.columns>
                     <flux:table.column>{{ __('Nama') }}</flux:table.column>
                     <flux:table.column>{{ __('Email') }}</flux:table.column>
@@ -85,7 +86,8 @@
                         </flux:table.row>
                     @endforelse
                 </flux:table.rows>
-             </flux:table>
+                 </flux:table>
+             </flux:card>
 
              <div class="mt-4">
                 {{ $users->links() }}

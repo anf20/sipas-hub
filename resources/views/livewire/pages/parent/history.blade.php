@@ -5,10 +5,41 @@
         <p class="font-body-md text-sm text-on-surface-variant">{{ __('Lihat semua transaksi pembayaran yang telah berhasil dilakukan.') }}</p>
     </section>
 
+    <!-- Filters Section -->
+    <div class="grid grid-cols-3 gap-2 px-1 -mt-2">
+        <flux:select wire:model.live="selectedCategory" placeholder="{{ __('Kategori') }}">
+            <flux:select.option value="">{{ __('Semua') }}</flux:select.option>
+            @foreach($categories as $cat)
+                <flux:select.option :value="$cat">{{ strtoupper($cat) }}</flux:select.option>
+            @endforeach
+        </flux:select>
+        <flux:select wire:model.live="selectedMonth" placeholder="{{ __('Bulan') }}">
+            <flux:select.option value="">{{ __('Semua') }}</flux:select.option>
+            <flux:select.option value="1">{{ __('Jan') }}</flux:select.option>
+            <flux:select.option value="2">{{ __('Feb') }}</flux:select.option>
+            <flux:select.option value="3">{{ __('Mar') }}</flux:select.option>
+            <flux:select.option value="4">{{ __('Apr') }}</flux:select.option>
+            <flux:select.option value="5">{{ __('Mei') }}</flux:select.option>
+            <flux:select.option value="6">{{ __('Jun') }}</flux:select.option>
+            <flux:select.option value="7">{{ __('Jul') }}</flux:select.option>
+            <flux:select.option value="8">{{ __('Agu') }}</flux:select.option>
+            <flux:select.option value="9">{{ __('Sep') }}</flux:select.option>
+            <flux:select.option value="10">{{ __('Okt') }}</flux:select.option>
+            <flux:select.option value="11">{{ __('Nov') }}</flux:select.option>
+            <flux:select.option value="12">{{ __('Des') }}</flux:select.option>
+        </flux:select>
+        <flux:select wire:model.live="selectedYear" placeholder="{{ __('Tahun') }}">
+            <flux:select.option value="">{{ __('Semua') }}</flux:select.option>
+            @foreach($years as $yr)
+                <flux:select.option :value="$yr">{{ $yr }}</flux:select.option>
+            @endforeach
+        </flux:select>
+    </div>
+
     <!-- History List -->
     <div class="flex flex-col gap-3">
         @forelse($paidInvoices as $invoice)
-            <div class="bg-surface-container-lowest p-normal rounded-xl border border-outline-variant shadow-sm flex items-center justify-between hover:bg-surface-container transition-colors group text-left">
+            <div class="bg-surface-container-lowest p-normal rounded-xl border border-outline-variant shadow-sm flex items-stretch justify-between hover:bg-surface-container transition-colors group text-left">
                 <div class="flex items-center gap-normal text-left">
                     <div class="w-12 h-12 rounded-xl bg-secondary-container/10 flex items-center justify-center text-secondary group-hover:bg-secondary-container/20 transition-colors shrink-0">
                         @php
@@ -38,11 +69,13 @@
                                     ]) }}
                                 </p>
                             @endif
+                            <p class="font-display-lg text-sm font-bold text-secondary mt-1">
+                                Rp {{ number_format($invoice->amount, 0, ',', '.') }}
+                            </p>
                         </div>
                     </div>
                 </div>
-                <div class="text-right flex flex-col items-end gap-2">
-                    <p class="font-display-lg text-lg font-semibold text-secondary">Rp {{ number_format($invoice->amount, 0, ',', '.') }}</p>
+                <div class="text-right flex flex-col items-end justify-end gap-2">
                     <div class="flex gap-2">
                         @if($invoice->payments->first())
                             <flux:button 

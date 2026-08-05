@@ -90,17 +90,19 @@
         </flux:card>
     @endif
 
-    <flux:card>
-        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-4">
-            <flux:heading size="md">Log Pengiriman (Global)</flux:heading>
-            <div class="flex gap-2 w-full md:w-auto">
-                <flux:input wire:model.live.debounce.300ms="search" placeholder="Cari nama / WA..." icon="magnifying-glass" class="w-full md:w-64" />
-                <flux:select wire:model.live="statusFilter" placeholder="Semua Status" class="w-full md:w-40">
-                    <flux:select.option value="">Semua Status</flux:select.option>
-                    <flux:select.option value="sent">Terkirim</flux:select.option>
-                    <flux:select.option value="failed">Gagal</flux:select.option>
-                    <flux:select.option value="pending">Tertunda</flux:select.option>
-                </flux:select>
+    <flux:card class="p-0 overflow-hidden">
+        <div class="p-6 pb-0">
+            <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <flux:heading size="md">Log Pengiriman (Global)</flux:heading>
+                <div class="flex gap-2 w-full md:w-auto">
+                    <flux:input wire:model.live.debounce.300ms="search" placeholder="Cari nama / WA..." icon="magnifying-glass" class="w-full md:w-64" />
+                    <flux:select wire:model.live="statusFilter" placeholder="Semua Status" class="w-full md:w-40">
+                        <flux:select.option value="">Semua Status</flux:select.option>
+                        <flux:select.option value="sent">Terkirim</flux:select.option>
+                        <flux:select.option value="failed">Gagal</flux:select.option>
+                        <flux:select.option value="pending">Tertunda</flux:select.option>
+                    </flux:select>
+                </div>
             </div>
         </div>
 

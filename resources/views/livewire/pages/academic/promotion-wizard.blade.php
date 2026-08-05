@@ -41,12 +41,14 @@
     </div>
 
     @if($sourceClassId)
-        <flux:card class="space-y-4">
-            <div class="flex justify-between items-center">
-                <flux:heading size="sm">{{ __('Daftar Siswa') }} ({{ count($studentsInSource) }})</flux:heading>
-                <flux:button variant="primary" wire:click="promote" :disabled="empty($selectedStudents) || !$targetClassId">
-                    {{ __('Pindahkan / Naikkan :count Siswa', ['count' => count($selectedStudents)]) }}
-                </flux:button>
+        <flux:card class="p-0 overflow-hidden">
+            <div class="p-6 pb-0">
+                <div class="flex justify-between items-center">
+                    <flux:heading size="sm">{{ __('Daftar Siswa') }} ({{ count($studentsInSource) }})</flux:heading>
+                    <flux:button variant="primary" wire:click="promote" :disabled="empty($selectedStudents) || !$targetClassId">
+                        {{ __('Pindahkan / Naikkan :count Siswa', ['count' => count($selectedStudents)]) }}
+                    </flux:button>
+                </div>
             </div>
 
             <flux:table>

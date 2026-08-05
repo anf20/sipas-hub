@@ -65,9 +65,11 @@
 
                 <!-- Student Roster -->
                 <div class="md:col-span-2">
-                    <flux:card>
-                        <div class="flex justify-between items-center mb-4">
-                            <flux:heading size="lg">{{ __('Daftar Siswa') }}</flux:heading>
+                    <flux:card class="p-0 overflow-hidden">
+                        <div class="p-6 pb-0">
+                            <div class="flex justify-between items-center mb-4">
+                                <flux:heading size="lg">{{ __('Daftar Siswa') }}</flux:heading>
+                            </div>
                         </div>
 
                         <flux:table>

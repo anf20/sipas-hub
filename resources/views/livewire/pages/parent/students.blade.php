@@ -1,84 +1,88 @@
-<div class="flex flex-col gap-huge">
+<div class="flex flex-col gap-6">
     <!-- Section Header -->
-    <section class="flex flex-col gap-tiny px-1">
-        <h2 class="font-headline-md text-2xl font-semibold text-primary">{{ __('Siswa') }}</h2>
-        <p class="font-body-md text-sm text-on-surface-variant">{{ __('Daftar putra-putri Anda yang terdaftar di sekolah.') }}</p>
+    <section class="flex flex-col gap-1 px-1">
+        <h2 class="text-2xl font-bold text-forest-text-main font-display">{{ __('Data Anak') }}</h2>
+        <p class="text-sm text-forest-text-muted">{{ __('Daftar putra-putri Anda yang terdaftar di sekolah.') }}</p>
     </section>
 
-    <!-- Students List -->
-    <div class="flex flex-col gap-3">
+    <!-- Students List (Stitch Style) -->
+    <div class="flex flex-col gap-4">
         @forelse($students as $student)
-            <div class="bg-surface-container-lowest rounded-3xl border border-outline-variant shadow-sm overflow-hidden flex flex-col">
-                <div class="p-normal flex items-start gap-normal">
-                    <!-- Photo/Avatar -->
-                    <div class="relative">
-                        @if($student->photo)
-                            <img src="{{ asset('storage/' . $student->photo) }}" class="w-16 h-16 rounded-2xl object-cover border border-outline-variant">
-                        @else
-                            <div class="w-16 h-16 rounded-2xl bg-primary-container/10 flex items-center justify-center border border-outline-variant">
-                                <flux:icon.user variant="outline" class="text-primary size-8" />
-                            </div>
-                        @endif
-                        <div class="absolute -bottom-1 -right-1 w-6 h-6 rounded-full {{ $student->status === 'aktif' ? 'bg-secondary' : 'bg-zinc-400' }} border-2 border-white flex items-center justify-center">
-                            @if($student->status === 'aktif')
-                                <flux:icon.check variant="outline" class="text-white size-3" />
-                            @else
-                                <flux:icon.x-mark variant="outline" class="text-white size-3" />
-                            @endif
-                        </div>
-                    </div>
+            <a href="{{ route('parent.invoices') }}" wire:navigate class="bg-white rounded-2xl border border-forest-light-sage/20 shadow-sm p-4 flex items-center gap-4 relative overflow-hidden transition-all duration-200 hover:shadow-md hover:border-forest-sage/40 group">
+                <!-- Background Decorative Icon -->
+                <div class="absolute top-0 right-0 p-3 pointer-events-none">
+                    <flux:icon.user variant="solid" class="text-forest-text-muted opacity-5 size-16 -mr-4 -mt-4 rotate-12 transition-transform duration-300 group-hover:scale-110" />
+                </div>
 
-                    <!-- Info -->
-                    <div class="flex-1 flex flex-col gap-0.5">
-                        <h3 class="font-title-sm text-lg font-bold text-primary leading-tight">{{ $student->name }}</h3>
-                        <p class="font-label-bold text-xs text-on-surface-variant">NIS: {{ $student->nis }}</p>
-                        
-                        <div class="mt-2 flex flex-wrap gap-2">
-                            <div class="flex items-center gap-1">
-                                <flux:icon.academic-cap variant="outline" class="size-3.5 text-on-surface-variant" />
-                                <span class="font-label-bold text-xs font-semibold text-on-surface-variant">
-                                    @if($student->schoolClass)
-                                        {{ $student->schoolClass->name }} ({{ $student->schoolClass->grade }})
-                                    @else
-                                        {{ __('Tingkat') }} {{ $student->current_grade }} ({{ __('Belum Ada Kelas') }})
-                                    @endif
-                                </span>
-                            </div>
+                <!-- Photo/Avatar -->
+                <div class="relative w-20 h-20 shrink-0 rounded-2xl overflow-hidden border-2 border-forest-surface bg-white shadow-xs">
+                    @if($student->photo)
+                        <img src="{{ asset('storage/' . $student->photo) }}" class="w-full h-full object-cover">
+                    @else
+                        <div class="w-full h-full bg-forest-surface/50 flex items-center justify-center">
+                            <flux:icon.user variant="solid" class="text-forest-sage size-8" />
                         </div>
-                        <div class="mt-1 flex items-center gap-1">
-                            <flux:icon.calendar variant="outline" class="size-3.5 text-secondary" />
-                            <span class="font-caption text-[10px] text-secondary">
+                    @endif
+                    <!-- Status dot badge -->
+                    <div class="absolute -bottom-1 -right-1 w-6 h-6 rounded-full {{ $student->status === 'aktif' ? 'bg-forest-success' : 'bg-zinc-400' }} border-2 border-white flex items-center justify-center shadow-xs">
+                        @if($student->status === 'aktif')
+                            <flux:icon.check variant="solid" class="text-white size-3" />
+                        @else
+                            <flux:icon.x-mark variant="solid" class="text-white size-3" />
+                        @endif
+                    </div>
+                </div>
+
+                <!-- Info -->
+                <div class="flex-grow flex flex-col gap-1 min-w-0">
+                    <h3 class="text-base font-bold text-forest-text-main leading-tight group-hover:text-forest-primary transition-colors truncate">{{ $student->name }}</h3>
+                    
+                    <div class="flex flex-wrap gap-x-4 gap-y-1 mt-0.5">
+                        <div class="flex items-center gap-1.5 min-w-0">
+                            <flux:icon.identification class="size-3.5 text-forest-text-muted shrink-0" />
+                            <span class="text-xs font-semibold text-forest-text-muted truncate">NIS: {{ $student->nis }}</span>
+                        </div>
+                        <div class="flex items-center gap-1.5 min-w-0">
+                            <flux:icon.academic-cap class="size-3.5 text-forest-text-muted shrink-0" />
+                            <span class="text-xs font-semibold text-forest-text-muted truncate">
                                 @if($student->schoolClass)
-                                    {{ __('Tahun Ajaran :year', ['year' => $student->schoolClass->academicYear->name]) }}
+                                    {{ $student->schoolClass->name }} ({{ $student->schoolClass->grade }})
                                 @else
-                                    {{ __('Tahun Masuk: :year', ['year' => $student->entry_year]) }}
+                                    {{ __('Tingkat') }} {{ $student->current_grade }} ({{ __('Belum Ada Kelas') }})
                                 @endif
                             </span>
                         </div>
                     </div>
+                    
+                    <div class="mt-1 flex items-center gap-1.5 text-forest-sage">
+                        <flux:icon.calendar class="size-3.5 text-forest-sage shrink-0" />
+                        <span class="text-[10px] font-semibold truncate">
+                            @if($student->schoolClass)
+                                {{ __('Tahun Ajaran :year', ['year' => $student->schoolClass->academicYear->name]) }}
+                            @else
+                                {{ __('Tahun Masuk: :year', ['year' => $student->entry_year]) }}
+                            @endif
+                        </span>
+                    </div>
                 </div>
-                
-                <!-- Quick Link -->
-                <div class="bg-surface-container-low px-normal py-3 border-t border-outline-variant flex justify-between items-center">
-                    <flux:button variant="ghost" size="sm" :href="route('parent.invoices')" class="!text-xs font-semibold text-primary" wire:navigate>
-                        {{ __('Lihat Tagihan') }}
-                    </flux:button>
-                    <flux:icon.chevron-right variant="outline" class="text-zinc-400 size-4" />
-                </div>
-            </div>
+
+                <!-- Action icon -->
+                <flux:icon.chevron-right class="text-forest-text-muted size-5 shrink-0 transition-transform duration-200 group-hover:translate-x-1" />
+            </a>
         @empty
-            <div class="p-huge text-center text-on-surface-variant bg-surface-container-lowest rounded-xl border border-dashed border-outline-variant">
+            <div class="py-12 text-center text-forest-text-muted bg-white rounded-2xl border border-dashed border-forest-light-sage/30">
                 {{ __('Belum ada data anak yang terdaftar.') }}
             </div>
         @endforelse
 
-        <!-- Info Box (Link to Help) -->
-        <a href="{{ route('parent.help') }}" wire:navigate class="mt-smallall p-normal bg-surface-container-high/50 rounded-2xl flex gap-normal items-start active:bg-surface-container-high transition-colors">
-            <flux:icon.question-mark-circle variant="outline" class="text-on-surface-variant size-5" />
-            <div class="flex-1">
-                <p class="font-caption text-xs text-on-surface-variant mt-xs leading-relaxed">{{ __('Jika Anda tidak melihat salah satu anak Anda terdaftar atau butuh bantuan lainnya, klik di sini untuk bantuan.') }}</p>
+        <!-- Utility Info (Stitch Style) -->
+        <a href="{{ route('parent.help') }}" wire:navigate class="mt-2 p-4 bg-forest-surface/50 border border-forest-light-sage/20 rounded-2xl flex gap-4 items-start hover:bg-forest-surface transition-colors duration-150 group">
+            <flux:icon.information-circle variant="solid" class="text-forest-sage size-6 shrink-0 mt-0.5" />
+            <div class="flex-grow min-w-0">
+                <h4 class="text-sm font-bold text-forest-text-main">{{ __('Anak Anda Tidak Terdaftar?') }}</h4>
+                <p class="text-xs text-forest-text-muted mt-1 leading-relaxed">{{ __('Jika Anda tidak melihat salah satu anak Anda terdaftar atau butuh bantuan lainnya, silakan klik di sini untuk menghubungi tata usaha sekolah.') }}</p>
             </div>
-            <flux:icon.chevron-right variant="outline" class="size-4 text-zinc-400 self-center" />
+            <flux:icon.chevron-right class="size-4 text-forest-text-muted shrink-0 self-center transition-transform duration-200 group-hover:translate-x-1" />
         </a>
     </div>
 </div>

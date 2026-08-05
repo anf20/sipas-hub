@@ -72,6 +72,17 @@
     --spacing-normal: 1rem;
     --spacing-large: 1.5rem;
     --spacing-huge: 2rem;
+
+    /* Forest Sage Theme Palette */
+    --color-forest-dark: #0F2A1D;
+    --color-forest-accent: #375534;
+    --color-forest-sage: #6B9071;
+    --color-forest-light-sage: #AEC3B0;
+    --color-forest-surface: #E3EED4;
+    --color-forest-text-main: #0F2A1D;
+    --color-forest-text-muted: #5C6E60;
+    --color-forest-success: #2E7D32;
+    --color-forest-danger: #D32F2F;
 }
 
 @layer theme {
@@ -116,6 +127,140 @@ table td:first-child {
 table th:last-child,
 table td:last-child {
     padding-right: 1rem !important; /* px-4 equivalent */
+}
+
+/* Scoped Theme Admin Overrides */
+.theme-admin {
+    --color-primary: var(--color-forest-dark);
+    --color-primary-container: var(--color-forest-accent);
+    --color-on-primary-container: var(--color-forest-light-sage);
+    --color-secondary: var(--color-forest-accent);
+    
+    --color-accent: var(--color-forest-sage);
+    --color-accent-content: var(--color-forest-sage);
+    --color-accent-foreground: #FFFFFF;
+    
+    --color-outline: var(--color-forest-light-sage);
+    --color-outline-variant: var(--color-forest-light-sage);
+    --color-background: var(--color-forest-surface);
+    --color-surface: #FFFFFF;
+    
+    --color-on-background: var(--color-forest-text-main);
+    --color-on-surface: var(--color-forest-text-main);
+    --color-on-surface-variant: var(--color-forest-text-muted);
+    
+    --color-success: var(--color-forest-success);
+    --color-error: var(--color-forest-danger);
+
+    /* Radius & Font overrides */
+    --radius-card: 16px;
+    --radius-pill: 50px;
+    --radius-button: 12px;
+    
+    --font-sans: 'Plus Jakarta Sans', 'Inter', sans-serif;
+    --font-display: 'Plus Jakarta Sans', 'Lexend', sans-serif;
+    
+    font-family: var(--font-sans);
+}
+
+/* Specific styling for Flux components under .theme-admin */
+.theme-admin flux\:sidebar {
+    background-color: var(--color-forest-dark) !important;
+    border-color: rgba(174, 195, 176, 0.15) !important;
+}
+
+.theme-admin flux\:sidebar [data-flux-sidebar-item] {
+    color: var(--color-forest-light-sage) !important;
+}
+
+.theme-admin flux\:sidebar [data-flux-sidebar-item]:hover {
+    background-color: rgba(55, 85, 52, 0.3) !important; /* Opacity hover */
+    color: #FFFFFF !important;
+}
+
+.theme-admin flux\:sidebar [data-flux-sidebar-item][data-current] {
+    background-color: var(--color-forest-sage) !important;
+    color: #FFFFFF !important;
+    border-radius: 12px !important;
+}
+
+.theme-admin flux\:sidebar [data-flux-sidebar-header] a,
+.theme-admin flux\:sidebar [data-flux-sidebar-header] svg,
+.theme-admin flux\:sidebar flux\:sidebar\.brand {
+    color: #FFFFFF !important;
+}
+
+.theme-admin flux\:sidebar [data-flux-sidebar-group] .text-zinc-400 {
+    color: var(--color-forest-light-sage) !important;
+    opacity: 0.6;
+}
+
+/* Flux cards customization under admin theme */
+.theme-admin [data-flux-card] {
+    background-color: #FFFFFF !important;
+    border-radius: var(--radius-card) !important;
+    box-shadow: 0px 4px 20px rgba(15, 42, 29, 0.05) !important;
+    border: 1px solid rgba(174, 195, 176, 0.2) !important;
+    padding: 24px !important;
+}
+
+/* Dark Card for metrics/highlights */
+.theme-admin .dark-card {
+    background-color: var(--color-forest-dark) !important;
+    color: #FFFFFF !important;
+    border-radius: var(--radius-card) !important;
+    box-shadow: 0px 4px 20px rgba(15, 42, 29, 0.15) !important;
+    border: none !important;
+    padding: 24px !important;
+}
+
+/* Make tables clean under the sage theme */
+.theme-admin table {
+    border-collapse: separate;
+    border-spacing: 0;
+}
+
+.theme-admin table th {
+    color: var(--color-forest-text-muted) !important;
+    font-weight: 600 !important;
+}
+
+.theme-admin table td {
+    color: var(--color-forest-text-main) !important;
+}
+
+/* Scoped Theme Parent Overrides */
+.theme-parent {
+    --color-primary: var(--color-forest-accent);
+    --color-primary-container: var(--color-forest-sage);
+    --color-on-primary-container: #FFFFFF;
+    --color-secondary: var(--color-forest-sage);
+    
+    --color-accent: var(--color-forest-sage);
+    --color-accent-content: var(--color-forest-sage);
+    --color-accent-foreground: #FFFFFF;
+    
+    --color-outline: var(--color-forest-light-sage);
+    --color-outline-variant: var(--color-forest-light-sage);
+    --color-background: var(--color-forest-surface);
+    --color-surface: #FFFFFF;
+    
+    --color-on-background: var(--color-forest-text-main);
+    --color-on-surface: var(--color-forest-text-main);
+    --color-on-surface-variant: var(--color-forest-text-muted);
+    
+    --color-success: var(--color-forest-success);
+    --color-error: var(--color-forest-danger);
+
+    /* Radius & Font overrides */
+    --radius-card: 16px;
+    --radius-pill: 50px;
+    --radius-button: 12px;
+    
+    --font-sans: 'Plus Jakarta Sans', 'Inter', sans-serif;
+    --font-display: 'Plus Jakarta Sans', 'Lexend', sans-serif;
+    
+    font-family: var(--font-sans);
 }
 
 /* \[:where(&)\]:size-4 {

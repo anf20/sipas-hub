@@ -20,6 +20,10 @@ class Dashboard extends Component
             ->where('status', 'unpaid')
             ->sum('amount');
 
+        $unpaidCount = Invoice::whereIn('student_id', $studentIds)
+            ->where('status', 'unpaid')
+            ->count();
+
         $upcomingInvoices = Invoice::with(['student', 'feeType'])
             ->whereIn('student_id', $studentIds)
             ->where('status', 'unpaid')
@@ -31,6 +35,7 @@ class Dashboard extends Component
             'user' => $user,
             'students' => $students,
             'totalUnpaidBalance' => $totalUnpaidBalance,
+            'unpaidCount' => $unpaidCount,
             'upcomingInvoices' => $upcomingInvoices,
         ])->title(__('Dashboard Orang Tua'));
     }

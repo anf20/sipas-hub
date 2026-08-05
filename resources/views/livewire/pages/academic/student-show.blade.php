@@ -83,9 +83,11 @@
                     </flux:card>
 
                     <!-- Invoices -->
-                    <flux:card class="space-y-4">
-                        <div class="flex justify-between items-center">
-                            <flux:heading size="lg">{{ __('Riwayat Tagihan') }}</flux:heading>
+                    <flux:card class="p-0 overflow-hidden">
+                        <div class="p-6 pb-0">
+                            <div class="flex justify-between items-center">
+                                <flux:heading size="lg">{{ __('Riwayat Tagihan') }}</flux:heading>
+                            </div>
                         </div>
                         <flux:table>
                             <flux:table.columns>

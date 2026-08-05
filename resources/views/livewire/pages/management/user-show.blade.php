@@ -62,11 +62,13 @@
                 <!-- Linked Students (For Parents) -->
                 <div class="lg:col-span-2 space-y-6">
                     @if($user->hasRole('Orang Tua'))
-                        <flux:card>
-                            <div class="flex justify-between items-center mb-4">
-                                <div>
-                                    <flux:heading size="lg">{{ __('Siswa yang Ditautkan') }}</flux:heading>
-                                    <flux:subheading>{{ __('Daftar anak yang berada di bawah perwalian akun ini.') }}</flux:subheading>
+                        <flux:card class="p-0 overflow-hidden">
+                            <div class="p-6 pb-0">
+                                <div class="flex justify-between items-center mb-4">
+                                    <div>
+                                        <flux:heading size="lg">{{ __('Siswa yang Ditautkan') }}</flux:heading>
+                                        <flux:subheading>{{ __('Daftar anak yang berada di bawah perwalian akun ini.') }}</flux:subheading>
+                                    </div>
                                 </div>
                             </div>
 

@@ -14,49 +14,60 @@
     @endphp
     <!-- Quick Summary Section (Highest Priority) -->
     @if($hasPayable)
-        <div class="bg-primary-container text-on-primary-container rounded-2xl p-large flex flex-col gap-normal shadow-xl sticky top-19 z-40 mx-1 mb-2 border border-white/10">
-            <div class="flex justify-between items-start px-1">
-                <div>
+        <div class="bg-forest-dark text-white rounded-2xl p-6 shadow-lg sticky top-19 z-40 mx-1 mb-2 border border-white/10 overflow-hidden flex flex-col gap-4 relative">
+            <!-- Decorative Pattern / Stitch aesthetics -->
+            <div class="absolute top-0 right-0 w-40 h-40 bg-forest-accent/30 rounded-full -mr-16 -mt-16 pointer-events-none"></div>
+            <div class="absolute bottom-0 left-0 w-24 h-24 bg-forest-sage/10 rounded-full -ml-8 -mb-8 pointer-events-none"></div>
+
+            <div class="flex justify-between items-start relative z-10">
+                <div class="flex flex-col gap-1">
                     @if($isSelectMode)
-                        <p class="font-label-bold text-xs font-semibold opacity-80 uppercase tracking-wider text-on-primary-container">{{ __('Total Terpilih (:count)', ['count' => count($selectedInvoices)]) }}</p>
-                        <h4 class="font-display-lg text-2xl font-semibold text-white mt-1">Rp {{ number_format($invoicesTotal, 0, ',', '.') }}</h4>
+                        <span class="font-semibold text-xs uppercase tracking-wider text-forest-light-sage/80">{{ __('TOTAL TERPILIH (:count)', ['count' => count($selectedInvoices)]) }}</span>
+                        <span class="font-display text-3xl font-extrabold text-white mt-1">Rp {{ number_format($invoicesTotal, 0, ',', '.') }}</span>
                     @else
-                        <p class="font-label-bold text-xs font-semibold opacity-80 uppercase tracking-wider text-on-primary-container">{{ __('Total Belum Dibayar') }}</p>
-                        <h4 class="font-display-lg text-2xl font-semibold text-white mt-1">Rp {{ number_format($totalUnpaidBalance, 0, ',', '.') }}</h4>
+                        <span class="font-semibold text-xs uppercase tracking-wider text-forest-light-sage/80">{{ __('TOTAL TUNGGAKAN') }}</span>
+                        <span class="font-display text-3xl font-extrabold text-white mt-1">Rp {{ number_format($totalUnpaidBalance, 0, ',', '.') }}</span>
                     @endif
                 </div>
-                <div class="bg-white/10 p-2.5 rounded-xl text-white">
-                    <flux:icon.credit-card variant="outline" class="size-6" />
+                <div class="bg-white/10 p-2.5 rounded-xl text-white shrink-0">
+                    <flux:icon.credit-card variant="solid" class="size-6" />
                 </div>
             </div>
 
+            <!-- Divider -->
+            <hr class="border-white/10 my-1 relative z-10" />
+
             @if($isSelectMode)
-                <div class="flex flex-col gap-2 mt-2">
+                <div class="flex gap-3 items-center relative z-10">
                     <flux:button 
                         wire:click="initiatePayment" 
                         variant="primary" 
                         icon="banknotes"
-                        class="w-full bg-secondary! text-white! border-none h-13 rounded-xl!"
+                        class="w-1/2 justify-center !bg-white !text-forest-dark border-none hover:!bg-white/95 h-11 rounded-xl cursor-pointer font-bold shadow-sm"
                         :disabled="empty($selectedInvoices)"
                     >
                         {{ __('Bayar Sekarang') }}
                     </flux:button>
                     <flux:button 
                         wire:click="toggleSelectMode" 
-                        variant="ghost" 
-                        class="w-full text-white/80! hover:text-white! hover:bg-white/10! h-10.5 rounded-xl!"
+                        class="w-1/2 justify-center !bg-white/10 !text-white border-none hover:!bg-white/20 h-11 rounded-xl cursor-pointer font-semibold"
                     >
                         {{ __('Batal Pilih') }}
                     </flux:button>
                 </div>
             @else
-                <flux:button 
-                    wire:click="toggleSelectMode" 
-                    icon="check-badge"
-                    class="w-full bg-white/10! text-white! hover:bg-white/20! border-white/20 mt-2 h-13 rounded-xl!"
-                >
-                    {{ __('Pilih Beberapa Tagihan (Bayar Massal)') }}
-                </flux:button>
+                <div class="flex justify-between items-center relative z-10">
+                    <span class="text-sm font-semibold text-forest-light-sage/90">
+                        {{ __(':count Tagihan Belum Lunas', ['count' => $unpaidCount]) }}
+                    </span>
+                    <flux:button 
+                        wire:click="toggleSelectMode" 
+                        icon="check-badge"
+                        class="!bg-white/10 !text-white hover:!bg-white/20 border border-white/20 h-11 px-5 rounded-xl font-semibold cursor-pointer shadow-sm"
+                    >
+                        {{ __('Bayar Massal') }}
+                    </flux:button>
+                </div>
             @endif
         </div>
     @endif
@@ -111,7 +122,7 @@
                             
                             <a 
                                 @if(!$isSelectMode) href="{{ route('parent.invoices.show', $invoice) }}" wire:navigate @endif
-                                class="{{ $isOverdue ? 'bg-red-50/70 dark:bg-red-950/10 border-red-200 dark:border-red-900/30 hover:bg-red-100/50 dark:hover:bg-red-950/20' : 'bg-surface-container-lowest border-outline-variant hover:bg-surface-container' }} p-normal rounded-xl border shadow-sm flex items-center justify-between transition-colors group cursor-pointer text-left flex-1"
+                                class="{{ $isOverdue ? 'bg-red-50/70 dark:bg-red-950/10 border-red-200 dark:border-red-900/30 hover:bg-red-100/50 dark:hover:bg-red-950/20' : 'bg-surface-container-lowest border-outline-variant hover:bg-surface-container' }} p-normal rounded-xl border shadow-sm flex items-stretch justify-between transition-colors group cursor-pointer text-left flex-1"
                             >
                                 <div class="flex items-center gap-normal text-left">
                                     <div class="w-12 h-12 rounded-xl {{ $isOverdue ? 'bg-red-100/60 dark:bg-red-900/20' : 'bg-surface-container group-hover:bg-surface-container-highest' }} flex items-center justify-center transition-colors shrink-0">
@@ -140,11 +151,13 @@
                                                 </p>
                                             @endif
                                             <p class="font-caption text-xs text-on-surface-variant">{{ __('Jatuh Tempo: :date', ['date' => $invoice->due_date->translatedFormat('d M Y')]) }}</p>
+                                            <p class="font-display-lg text-sm font-bold {{ $isOverdue ? 'text-red-700 dark:text-red-400' : 'text-primary' }} mt-1">
+                                                Rp {{ number_format($invoice->amount, 0, ',', '.') }}
+                                            </p>
                                         </div>
                                     </div>
                                 </div>
-                                <div class="text-right flex flex-col items-end gap-1">
-                                    <p class="font-display-lg text-lg font-semibold {{ $isOverdue ? 'text-red-700 dark:text-red-400' : 'text-primary' }}">Rp {{ number_format($invoice->amount, 0, ',', '.') }}</p>
+                                <div class="text-right flex flex-col items-end justify-end gap-1">
                                     @if($invoice->status === 'paid')
                                         <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-secondary-container text-on-secondary-container">
                                             {{ __('Sudah Bayar') }}
@@ -207,7 +220,7 @@
                                                 <flux:icon.check variant="mini" class="size-3.5" />
                                             </div>
                                             
-                                            <div class="bg-surface-container-lowest p-normal rounded-xl border border-outline-variant shadow-sm flex items-center justify-between opacity-80 flex-1">
+                                            <div class="bg-surface-container-lowest p-normal rounded-xl border border-outline-variant shadow-sm flex items-stretch justify-between opacity-80 flex-1">
                                                 <div class="flex items-center gap-normal text-left">
                                                     <div class="w-12 h-12 rounded-xl bg-surface-container flex items-center justify-center shrink-0">
                                                         <flux:icon.book-open variant="outline" class="size-5 text-primary" />
@@ -224,11 +237,13 @@
                                                                 </p>
                                                             @endif
                                                             <p class="font-caption text-xs text-on-surface-variant">{{ __('Jatuh Tempo: :date', ['date' => $invoice->due_date->translatedFormat('d M Y')]) }}</p>
+                                                            <p class="font-display-lg text-sm font-bold text-primary mt-1">
+                                                                Rp {{ number_format($invoice->amount, 0, ',', '.') }}
+                                                            </p>
                                                         </div>
                                                     </div>
                                                 </div>
-                                                <div class="text-right flex flex-col items-end gap-1">
-                                                    <p class="font-display-lg text-lg font-semibold text-primary">Rp {{ number_format($invoice->amount, 0, ',', '.') }}</p>
+                                                <div class="text-right flex flex-col items-end justify-end gap-1">
                                                     <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-zinc-200 text-zinc-700">
                                                         {{ __('Bulan Depan') }}
                                                     </span>

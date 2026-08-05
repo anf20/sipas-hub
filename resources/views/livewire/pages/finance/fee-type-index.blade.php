@@ -17,7 +17,8 @@
                  <flux:text size="sm">{{ __('Daftar semua jenis tagihan non-SPP.') }}</flux:text>
              </div>
              
-             <flux:table>
+             <flux:card class="p-0 overflow-hidden">
+                 <flux:table>
                 <flux:table.columns>
                     <flux:table.column>{{ __('Nama Tagihan / Event') }}</flux:table.column>
                     <flux:table.column>{{ __('Kategori') }}</flux:table.column>
@@ -99,7 +100,8 @@
                         </flux:table.row>
                     @endforeach
                 </flux:table.rows>
-             </flux:table>
+                 </flux:table>
+             </flux:card>
 
              @if($feeTypes->isEmpty())
                 <div class="py-20 text-center border-2 border-dashed border-zinc-100 dark:border-zinc-800 rounded-2xl">
