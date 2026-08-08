@@ -7,6 +7,7 @@ use App\Livewire\Pages\Finance\FeeTypeIndex;
 use App\Livewire\Pages\Finance\FeeTypeShow;
 use App\Livewire\Pages\Finance\FinancialReport;
 use App\Livewire\Pages\Finance\PaymentManual;
+use App\Livewire\Pages\Finance\PaymentVerification;
 use App\Livewire\Pages\Finance\SppIndex;
 use App\Livewire\Pages\Finance\SppMonthShow;
 use App\Livewire\Pages\Finance\WhatsappBlastFee;
@@ -26,6 +27,7 @@ Route::middleware(['auth', 'verified'])->prefix('finance')->name('finance.')->gr
     Route::get('fee-types/{feeType}/edit', FeeTypeEdit::class)->name('fee-types.edit');
 
     Route::get('invoices/manual-payment', PaymentManual::class)->name('invoice.manual-payment');
+    Route::get('payments/verification', PaymentVerification::class)->name('payments.verification');
 
     // WA Blast
     Route::get('fee-types/{feeType}/whatsapp-blast', WhatsappBlastFee::class)->name('fee-types.whatsapp-blast');

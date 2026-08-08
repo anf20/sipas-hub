@@ -11,6 +11,10 @@ use Livewire\Component;
 #[Layout('layouts.parent')]
 class History extends Component
 {
+    public string $search = '';
+
+    public bool $showAdvancedFilters = false;
+
     public $selectedCategory = '';
 
     public $selectedMonth = '';
@@ -25,6 +29,15 @@ class History extends Component
         $query = Invoice::with(['student', 'feeType'])
             ->whereIn('student_id', $studentIds)
             ->where('status', 'paid');
+
+        if ($this->search) {
+            $query->where(function ($q) {
+                $q->where('billing_detail', 'like', '%'.$this->search.'%')
+                    ->orWhereHas('student', function ($sub) {
+                        $sub->where('name', 'like', '%'.$this->search.'%');
+                    });
+            });
+        }
 
         if ($this->selectedCategory) {
             $query->whereHas('feeType', function ($q) {
@@ -49,7 +62,7 @@ class History extends Component
         $years = Invoice::whereIn('student_id', $studentIds)
             ->where('status', 'paid')
             ->pluck('updated_at')
-            ->map(fn($date) => $date->year)
+            ->map(fn ($date) => $date->year)
             ->unique()
             ->sortDesc()
             ->values();
@@ -58,10 +71,25 @@ class History extends Component
             $years = collect([now()->year, now()->year - 1]);
         }
 
+        // Generate dynamic month list starting from current month going backwards
+        $monthsList = collect();
+        $monthsList->put('', __('Semua'));
+
+        $addedMonths = [];
+        for ($i = 0; $i < 12; $i++) {
+            $date = now()->subMonths($i);
+            $mNum = (string) $date->month;
+            if (! in_array($mNum, $addedMonths)) {
+                $addedMonths[] = $mNum;
+                $monthsList->put($mNum, $date->translatedFormat('F'));
+            }
+        }
+
         return view('livewire.pages.parent.history', [
             'paidInvoices' => $paidInvoices,
             'categories' => $categories,
             'years' => $years,
+            'monthsList' => $monthsList,
         ])->title(__('Riwayat Pembayaran'));
     }
 }

@@ -48,6 +48,7 @@ return [
         'driver' => env('WA_DRIVER', 'log'),
         'test_number' => env('WA_TEST_NUMBER'),
         'fonnte_token' => env('FONNTE_TOKEN'),
+        'admin_number' => env('WA_ADMIN_NUMBER', '6281234567890'),
     ],
 
 ];

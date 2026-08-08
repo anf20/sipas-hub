@@ -47,10 +47,13 @@
                     <div class="flex items-center justify-between mt-1 pt-2 border-t border-forest-surface">
                         <span class="text-xs text-forest-text-muted">{{ __('Status') }}</span>
                         @php
-                            $pendingCount = $student->invoices()->where('status', 'unpaid')->count();
+                            $unpaidInvoicesCount = $student->invoices()->where('status', 'unpaid')->count();
+                            $verificationPendingCount = $student->invoices()->where('status', 'pending')->count();
                         @endphp
-                        @if($pendingCount > 0)
-                            <span class="text-[10px] font-bold text-forest-danger bg-forest-danger/10 px-2.5 py-0.5 rounded-full">{{ $pendingCount }} {{ __('Pending') }}</span>
+                        @if($unpaidInvoicesCount > 0)
+                            <span class="text-[10px] font-bold text-forest-danger bg-forest-danger/10 px-2.5 py-0.5 rounded-full">{{ $unpaidInvoicesCount }} {{ __('Belum Bayar') }}</span>
+                        @elseif($verificationPendingCount > 0)
+                            <span class="text-[10px] font-bold text-amber-600 bg-amber-100 px-2.5 py-0.5 rounded-full">{{ $verificationPendingCount }} {{ __('Verifikasi') }}</span>
                         @else
                             <span class="text-[10px] font-bold text-forest-success bg-forest-success/10 px-2.5 py-0.5 rounded-full">{{ __('Lunas') }}</span>
                         @endif
@@ -71,37 +74,38 @@
                 @php
                     $isOverdue = $invoice->status === 'unpaid' && $invoice->due_date->isPast();
                 @endphp
-                <div class="{{ $isOverdue ? 'bg-red-50/50 border-red-200 hover:bg-red-50' : 'bg-white border-forest-light-sage/20 hover:bg-forest-surface/30' }} p-4 rounded-2xl border shadow-sm flex items-center justify-between transition-all duration-200">
-                    <div class="flex items-center gap-3">
-                        <div class="w-11 h-11 rounded-xl {{ $isOverdue ? 'bg-red-100 text-red-700' : 'bg-forest-surface text-forest-dark' }} flex items-center justify-center shrink-0">
-                            @php
-                                $category = strtolower($invoice->feeType->category);
-                            @endphp
-                            @if($category === 'spp') 
-                                <flux:icon.book-open variant="outline" class="size-5" />
-                            @elseif($category === 'seragam') 
-                                <flux:icon.briefcase variant="outline" class="size-5" />
-                            @elseif($category === 'kegiatan')
-                                <flux:icon.calendar-days variant="outline" class="size-5" />
-                            @else 
-                                <flux:icon.banknotes variant="outline" class="size-5" />
-                            @endif
-                        </div>
-                        <div class="flex flex-col min-w-0">
-                            <span class="font-semibold text-sm text-forest-text-main truncate">{{ $invoice->billing_detail }}</span>
-                            <span class="text-xs text-forest-text-muted mt-0.5 truncate">{{ $invoice->student->name }} • {{ $invoice->due_date->translatedFormat('d M Y') }}</span>
-                        </div>
-                    </div>
-                    <div class="flex flex-col items-end shrink-0 ml-2">
-                        <span class="font-bold text-sm {{ $isOverdue ? 'text-red-700' : 'text-forest-text-main' }}">Rp {{ number_format($invoice->amount, 0, ',', '.') }}</span>
+                <div class="{{ $isOverdue ? 'bg-red-50/50 border-red-200 hover:bg-red-50' : 'bg-white border-forest-light-sage/20 hover:bg-forest-surface/30' }} p-4 rounded-2xl border shadow-sm flex items-center gap-3 transition-all duration-200">
+                    <div class="w-12 h-12 rounded-xl {{ $isOverdue ? 'bg-red-100 text-red-700' : 'bg-forest-surface text-forest-dark' }} flex items-center justify-center shrink-0">
                         @php
-                            $daysLeft = (int) now()->startOfDay()->diffInDays($invoice->due_date->copy()->startOfDay(), false);
+                            $category = strtolower($invoice->feeType->category);
                         @endphp
-                        @if($daysLeft >= 0)
-                            <span class="text-[10px] font-semibold text-forest-success bg-forest-success/10 px-2 py-0.5 rounded-full mt-1">{{ $daysLeft }} {{ __('hari lagi') }}</span>
-                        @else
-                            <span class="text-[10px] font-bold text-red-600 bg-red-100/60 px-2 py-0.5 rounded-full mt-1">{{ __('Terlambat') }}</span>
+                        @if($category === 'spp') 
+                            <flux:icon.book-open variant="outline" class="size-5" />
+                        @elseif($category === 'seragam') 
+                            <flux:icon.briefcase variant="outline" class="size-5" />
+                        @elseif($category === 'kegiatan')
+                            <flux:icon.calendar-days variant="outline" class="size-5" />
+                        @else 
+                            <flux:icon.banknotes variant="outline" class="size-5" />
                         @endif
+                    </div>
+                    <div class="flex-1 flex flex-col min-w-0">
+                        <span class="font-semibold text-sm text-forest-text-main truncate">{{ $invoice->billing_detail }}</span>
+                        <span class="text-xs text-forest-text-muted mt-0.5 truncate">{{ $invoice->student->name }}</span>
+                        
+                        <div class="flex justify-between items-center mt-2 w-full">
+                            <span class="font-bold text-sm {{ $isOverdue ? 'text-red-700' : 'text-forest-text-main' }}">Rp {{ number_format($invoice->amount, 0, ',', '.') }}</span>
+                            <div class="flex items-center shrink-0">
+                                @php
+                                    $daysLeft = (int) now()->startOfDay()->diffInDays($invoice->due_date->copy()->startOfDay(), false);
+                                @endphp
+                                @if($daysLeft >= 0)
+                                    <span class="text-[10px] font-semibold text-forest-success bg-forest-success/10 px-2 py-0.5 rounded-full">{{ $daysLeft }} {{ __('hari lagi') }} ({{ $invoice->due_date->translatedFormat('d M Y') }})</span>
+                                @else
+                                    <span class="text-[10px] font-bold text-red-600 bg-red-100/60 px-2 py-0.5 rounded-full">{{ __('Terlambat') }} ({{ $invoice->due_date->translatedFormat('d M Y') }})</span>
+                                @endif
+                            </div>
+                        </div>
                     </div>
                 </div>
             @empty

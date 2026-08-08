@@ -75,26 +75,26 @@ class TestDatabaseSeeder extends Seeder
         $parent->assignRole('Orang Tua');
 
         $student1 = Student::firstOrCreate(
-            ['nisn' => '1234567890'],
+            ['nis' => '123456'],
             [
                 'parent_user_id' => $parent->id,
                 'school_class_id' => $class->id,
                 'name' => 'Siswa Test A',
                 'gender' => 'L',
                 'entry_year' => '2025',
-                'status' => 'active',
+                'status' => 'aktif',
             ]
         );
 
         $student2 = Student::firstOrCreate(
-            ['nisn' => '0987654321'],
+            ['nis' => '654321'],
             [
                 'parent_user_id' => $parent->id,
                 'school_class_id' => $class->id,
                 'name' => 'Siswa Test B',
                 'gender' => 'P',
                 'entry_year' => '2025',
-                'status' => 'active',
+                'status' => 'aktif',
             ]
         );
 

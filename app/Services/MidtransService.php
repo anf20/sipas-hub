@@ -22,6 +22,7 @@ class MidtransService
     public function calculateFee(float $amount, string $method): float
     {
         return match ($method) {
+            'manual_transfer' => 0.0,
             'qris' => ceil($amount * 0.007), // 0.7%
             'dana' => ceil($amount * 0.015), // 1.5%
             'bca_va', 'bri_va', 'echannel' => 4500, // Flat VA

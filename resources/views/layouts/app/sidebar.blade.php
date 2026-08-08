@@ -59,6 +59,9 @@
                     <flux:sidebar.item icon="banknotes" :href="route('finance.invoice.manual-payment')" :current="request()->routeIs('finance.invoice.manual-payment')" wire:navigate>
                         {{ __('Pembayaran Manual') }}
                     </flux:sidebar.item>
+                    <flux:sidebar.item icon="check-circle" :href="route('finance.payments.verification')" :current="request()->routeIs('finance.payments.verification')" wire:navigate>
+                        {{ __('Verifikasi Pembayaran') }}
+                    </flux:sidebar.item>
                     <flux:sidebar.item icon="chat-bubble-left-right" :href="route('finance.whatsapp-broadcast.general')" :current="request()->routeIs('finance.whatsapp-broadcast.general')" wire:navigate>
                         {{ __('Broadcast Pengumuman') }}
                     </flux:sidebar.item>

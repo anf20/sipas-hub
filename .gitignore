@@ -37,3 +37,4 @@ Thumbs.db
 # AI & Agent local folders
 /.gemini/
 /.agents/
+/.obsidian/

@@ -122,61 +122,68 @@
                             
                             <a 
                                 @if(!$isSelectMode) href="{{ route('parent.invoices.show', $invoice) }}" wire:navigate @endif
-                                class="{{ $isOverdue ? 'bg-red-50/70 dark:bg-red-950/10 border-red-200 dark:border-red-900/30 hover:bg-red-100/50 dark:hover:bg-red-950/20' : 'bg-surface-container-lowest border-outline-variant hover:bg-surface-container' }} p-normal rounded-xl border shadow-sm flex items-stretch justify-between transition-colors group cursor-pointer text-left flex-1"
+                                class="{{ $invoice->status === 'pending' ? 'bg-amber-50/20 border-amber-200 dark:border-amber-900/20 hover:bg-amber-50/40' : ($isOverdue ? 'bg-red-50/70 dark:bg-red-950/10 border-red-200 dark:border-red-900/30 hover:bg-red-100/50 dark:hover:bg-red-950/20' : 'bg-surface-container-lowest border-outline-variant hover:bg-surface-container') }} p-normal rounded-xl border shadow-sm flex items-center gap-3 transition-colors group cursor-pointer text-left flex-1"
                             >
-                                <div class="flex items-center gap-normal text-left">
-                                    <div class="w-12 h-12 rounded-xl {{ $isOverdue ? 'bg-red-100/60 dark:bg-red-900/20' : 'bg-surface-container group-hover:bg-surface-container-highest' }} flex items-center justify-center transition-colors shrink-0">
-                                        @php
-                                            $category = strtolower($invoice->feeType->category);
-                                        @endphp
-                                        @if($category === 'spp') 
-                                            <flux:icon.book-open variant="outline" class="size-5 {{ $isOverdue ? 'text-red-700 dark:text-red-400' : 'text-primary' }}" />
-                                        @elseif($category === 'seragam') 
-                                            <flux:icon.briefcase variant="outline" class="size-5 {{ $isOverdue ? 'text-red-700 dark:text-red-400' : 'text-primary' }}" />
-                                        @elseif($category === 'kegiatan')
-                                            <flux:icon.calendar-days variant="outline" class="size-5 {{ $isOverdue ? 'text-red-700 dark:text-red-400' : 'text-primary' }}" />
-                                        @else 
-                                            <flux:icon.banknotes variant="outline" class="size-5 {{ $isOverdue ? 'text-red-700 dark:text-red-400' : 'text-primary' }}" />
+                                <div class="w-12 h-12 rounded-xl {{ $isOverdue ? 'bg-red-100/60 dark:bg-red-900/20' : 'bg-surface-container group-hover:bg-surface-container-highest' }} flex items-center justify-center transition-colors shrink-0">
+                                    @php
+                                        $category = strtolower($invoice->feeType->category);
+                                    @endphp
+                                    @if($category === 'spp') 
+                                        <flux:icon.book-open variant="outline" class="size-5 {{ $isOverdue ? 'text-red-700 dark:text-red-400' : 'text-primary' }}" />
+                                    @elseif($category === 'seragam') 
+                                        <flux:icon.briefcase variant="outline" class="size-5 {{ $isOverdue ? 'text-red-700 dark:text-red-400' : 'text-primary' }}" />
+                                    @elseif($category === 'kegiatan')
+                                        <flux:icon.calendar-days variant="outline" class="size-5 {{ $isOverdue ? 'text-red-700 dark:text-red-400' : 'text-primary' }}" />
+                                    @else 
+                                        <flux:icon.banknotes variant="outline" class="size-5 {{ $isOverdue ? 'text-red-700 dark:text-red-400' : 'text-primary' }}" />
+                                    @endif
+                                </div>
+                                <div class="flex-1 flex flex-col min-w-0 text-left">
+                                    <p class="font-label-bold text-sm font-semibold text-on-surface leading-tight truncate">{{ $invoice->billing_detail }}</p>
+                                    <div class="text-xs text-on-surface-variant/80 truncate mt-0.5 flex flex-wrap items-center gap-x-1.5 gap-y-0.5">
+                                        <span>{{ $invoice->student->name }}</span>
+                                        @if($invoice->period_month && $invoice->period_year)
+                                            <span class="text-[10px] opacity-80">
+                                                • {{ __('Periode: :month :year', [
+                                                    'month' => Carbon\Carbon::create()->month($invoice->period_month)->translatedFormat('F'),
+                                                    'year' => $invoice->period_year
+                                                ]) }}
+                                            </span>
                                         @endif
+                                        <span class="text-[10px] opacity-75">
+                                            • {{ __('Jatuh Tempo: :date', ['date' => $invoice->due_date->translatedFormat('d M Y')]) }}
+                                        </span>
                                     </div>
-                                    <div class="flex flex-col text-left">
-                                        <p class="font-label-bold text-sm font-semibold text-on-surface leading-tight">{{ $invoice->billing_detail }}</p>
-                                        <div class="flex flex-col gap-0.5">
-                                            @if($invoice->period_month && $invoice->period_year)
-                                                <p class="font-caption text-[10px] text-on-surface-variant/80">
-                                                    {{ __('Periode: :month :year', [
-                                                        'month' => Carbon\Carbon::create()->month($invoice->period_month)->translatedFormat('F'),
-                                                        'year' => $invoice->period_year
-                                                    ]) }}
-                                                </p>
+                                    <div class="flex justify-between items-center mt-2 w-full">
+                                        <span class="font-display-lg text-sm font-bold {{ $isOverdue ? 'text-red-700 dark:text-red-400' : 'text-primary' }}">
+                                            Rp {{ number_format($invoice->amount, 0, ',', '.') }}
+                                        </span>
+                                        <div class="flex items-center shrink-0">
+                                            @if($invoice->status === 'paid')
+                                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-secondary-container text-on-secondary-container">
+                                                    {{ __('Sudah Bayar') }}
+                                                </span>
+                                            @elseif($invoice->status === 'pending')
+                                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300">
+                                                    {{ __('Menunggu Verifikasi') }}
+                                                </span>
+                                            @elseif($invoice->status === 'inactive')
+                                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-zinc-200 text-zinc-700">
+                                                    {{ __('Bulan Depan') }}
+                                                </span>
+                                            @else
+                                                @if($isOverdue)
+                                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300">
+                                                        {{ __('Jatuh Tempo') }}
+                                                    </span>
+                                                @else
+                                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-error-container text-on-error-container">
+                                                        {{ __('Belum Bayar') }}
+                                                    </span>
+                                                @endif
                                             @endif
-                                            <p class="font-caption text-xs text-on-surface-variant">{{ __('Jatuh Tempo: :date', ['date' => $invoice->due_date->translatedFormat('d M Y')]) }}</p>
-                                            <p class="font-display-lg text-sm font-bold {{ $isOverdue ? 'text-red-700 dark:text-red-400' : 'text-primary' }} mt-1">
-                                                Rp {{ number_format($invoice->amount, 0, ',', '.') }}
-                                            </p>
                                         </div>
                                     </div>
-                                </div>
-                                <div class="text-right flex flex-col items-end justify-end gap-1">
-                                    @if($invoice->status === 'paid')
-                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-secondary-container text-on-secondary-container">
-                                            {{ __('Sudah Bayar') }}
-                                        </span>
-                                    @elseif($invoice->status === 'inactive')
-                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-zinc-200 text-zinc-700">
-                                            {{ __('Bulan Depan') }}
-                                        </span>
-                                    @else
-                                        @if($isOverdue)
-                                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300">
-                                                {{ __('Jatuh Tempo') }}
-                                            </span>
-                                        @else
-                                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-error-container text-on-error-container">
-                                                {{ __('Belum Bayar') }}
-                                            </span>
-                                        @endif
-                                    @endif
                                 </div>
                             </a>
                         </div>
@@ -220,33 +227,35 @@
                                                 <flux:icon.check variant="mini" class="size-3.5" />
                                             </div>
                                             
-                                            <div class="bg-surface-container-lowest p-normal rounded-xl border border-outline-variant shadow-sm flex items-stretch justify-between opacity-80 flex-1">
-                                                <div class="flex items-center gap-normal text-left">
-                                                    <div class="w-12 h-12 rounded-xl bg-surface-container flex items-center justify-center shrink-0">
-                                                        <flux:icon.book-open variant="outline" class="size-5 text-primary" />
+                                            <div class="bg-surface-container-lowest p-normal rounded-xl border border-outline-variant shadow-sm flex items-center gap-3 opacity-80 flex-1">
+                                                <div class="w-12 h-12 rounded-xl bg-surface-container flex items-center justify-center shrink-0">
+                                                    <flux:icon.book-open variant="outline" class="size-5 text-primary" />
+                                                </div>
+                                                <div class="flex-1 flex flex-col min-w-0 text-left">
+                                                    <p class="font-label-bold text-sm font-semibold text-on-surface leading-tight truncate">{{ $invoice->billing_detail }}</p>
+                                                    <div class="text-xs text-on-surface-variant/80 truncate mt-0.5 flex flex-wrap items-center gap-x-1.5 gap-y-0.5">
+                                                        @if($invoice->period_month && $invoice->period_year)
+                                                            <span class="text-[10px] opacity-80">
+                                                                {{ __('Periode: :month :year', [
+                                                                    'month' => Carbon\Carbon::create()->month($invoice->period_month)->translatedFormat('F'),
+                                                                    'year' => $invoice->period_year
+                                                                ]) }}
+                                                            </span>
+                                                        @endif
+                                                        <span class="text-[10px] opacity-75">
+                                                            • {{ __('Jatuh Tempo: :date', ['date' => $invoice->due_date->translatedFormat('d M Y')]) }}
+                                                        </span>
                                                     </div>
-                                                    <div class="flex flex-col text-left">
-                                                        <p class="font-label-bold text-sm font-semibold text-on-surface leading-tight">{{ $invoice->billing_detail }}</p>
-                                                        <div class="flex flex-col gap-0.5">
-                                                            @if($invoice->period_month && $invoice->period_year)
-                                                                <p class="font-caption text-[10px] text-on-surface-variant/80">
-                                                                    {{ __('Periode: :month :year', [
-                                                                        'month' => Carbon\Carbon::create()->month($invoice->period_month)->translatedFormat('F'),
-                                                                        'year' => $invoice->period_year
-                                                                    ]) }}
-                                                                </p>
-                                                            @endif
-                                                            <p class="font-caption text-xs text-on-surface-variant">{{ __('Jatuh Tempo: :date', ['date' => $invoice->due_date->translatedFormat('d M Y')]) }}</p>
-                                                            <p class="font-display-lg text-sm font-bold text-primary mt-1">
-                                                                Rp {{ number_format($invoice->amount, 0, ',', '.') }}
-                                                            </p>
+                                                    <div class="flex justify-between items-center mt-2 w-full">
+                                                        <span class="font-display-lg text-sm font-bold text-primary">
+                                                            Rp {{ number_format($invoice->amount, 0, ',', '.') }}
+                                                        </span>
+                                                        <div class="flex items-center shrink-0">
+                                                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-zinc-200 text-zinc-700">
+                                                                {{ __('Bulan Depan') }}
+                                                            </span>
                                                         </div>
                                                     </div>
-                                                </div>
-                                                <div class="text-right flex flex-col items-end justify-end gap-1">
-                                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-zinc-200 text-zinc-700">
-                                                        {{ __('Bulan Depan') }}
-                                                    </span>
                                                 </div>
                                             </div>
                                         </div>
@@ -275,6 +284,7 @@
             <div class="space-y-3">
                 <flux:label>{{ __('Metode Pembayaran') }}</flux:label>
                 <flux:radio.group wire:model.live="paymentMethod" variant="cards" class="flex flex-col gap-2">
+                    <flux:radio value="manual_transfer" label="Transfer Manual (Rekening Sekolah)" description="Biaya Flat Rp 0 - Verifikasi Manual" />
                     <flux:radio value="bca_va" label="BCA Virtual Account" description="Biaya Flat Rp 4.500" />
                     <flux:radio value="bri_va" label="BRI Virtual Account" description="Biaya Flat Rp 4.500" />
                     <flux:radio value="echannel" label="Mandiri Bill Payment" description="Biaya Flat Rp 4.500" />
@@ -308,8 +318,64 @@
 
             <div class="flex gap-3">
                 <flux:button class="flex-1" variant="ghost" wire:click="$set('showConfirmationModal', false)">{{ __('Batal') }}</flux:button>
-                <flux:button class="flex-1" variant="primary" icon="banknotes" wire:click="paySelected">{{ __('Bayar Sekarang') }}</flux:button>
+                <flux:button class="flex-1" variant="primary" icon="banknotes" wire:click="startPayment" wire:loading.attr="disabled">
+                    {{ __('Bayar Sekarang') }}
+                </flux:button>
             </div>
         </div>
+    </flux:modal>
+
+    <!-- Manual Transfer Details & Upload Proof Modal -->
+    <flux:modal wire:model="showManualTransferModal" class="min-w-[350px] max-w-[500px]">
+        <form wire:submit.prevent="paySelected" class="space-y-6">
+            <div>
+                <flux:heading size="lg">{{ __('Upload Bukti Transfer') }}</flux:heading>
+                <flux:subheading>{{ __('Silakan transfer ke rekening sekolah di bawah dan unggah bukti transaksi Anda.') }}</flux:subheading>
+            </div>
+
+            <div class="p-4 bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-900/30 rounded-xl space-y-3">
+                <div class="text-xs font-bold text-amber-800 dark:text-amber-400 uppercase tracking-wider">{{ __('Rekening Transfer Sekolah') }}</div>
+                <div class="text-sm text-zinc-700 dark:text-zinc-300 space-y-1">
+                    <p><strong>Bank Syariah Indonesia (BSI)</strong></p>
+                    <div x-data="{ copied: false }" class="flex items-center gap-2">
+                        <p>No. Rekening: <span class="font-mono text-base font-bold text-primary">7711223344</span></p>
+                        <button 
+                            type="button"
+                            x-on:click="navigator.clipboard.writeText('7711223344'); copied = true; setTimeout(() => copied = false, 2000)"
+                            class="inline-flex items-center gap-1 text-xs text-primary hover:text-primary-hover focus:outline-none cursor-pointer font-medium bg-primary/10 hover:bg-primary/20 px-2 py-0.5 rounded-lg transition-all"
+                        >
+                            <flux:icon.document-duplicate variant="mini" class="size-3" x-show="!copied" />
+                            <flux:icon.check variant="mini" class="size-3 text-green-600" x-show="copied" />
+                            <span x-text="copied ? '{{ __('Tersalin') }}' : '{{ __('Salin') }}'"></span>
+                        </button>
+                    </div>
+                    <p>Atas Nama: <strong>SIPAS Hub Yayasan</strong></p>
+                </div>
+                <div class="pt-2 border-t border-amber-200 dark:border-amber-900/20">
+                    <flux:label class="text-amber-900 dark:text-amber-300 font-semibold mb-1">{{ __('Upload Bukti Transfer (Foto/Gambar)') }}</flux:label>
+                    <flux:input type="file" wire:model="proofFile" accept="image/*" class="!bg-white dark:!bg-zinc-800" required />
+                    @error('proofFile') <span class="text-xs text-red-600 font-medium">{{ $message }}</span> @enderror
+                    
+                    @if($proofFile && !$errors->has('proofFile'))
+                        <div class="mt-2 text-xs text-green-600 flex items-center gap-1 font-medium">
+                            <flux:icon.check-circle variant="mini" class="size-4" />
+                            {{ __('Gambar berhasil dipilih.') }}
+                        </div>
+                    @endif
+                </div>
+            </div>
+
+            <div class="bg-zinc-50 dark:bg-zinc-900 p-4 rounded-xl flex justify-between items-center border border-zinc-200 dark:border-zinc-700">
+                <span class="font-bold text-zinc-600 dark:text-zinc-400">{{ __('Total Tagihan') }}</span>
+                <span class="font-display-lg text-xl font-bold text-primary">Rp {{ number_format($totalToPay, 0, ',', '.') }}</span>
+            </div>
+
+            <div class="flex gap-3">
+                <flux:button class="flex-1" variant="ghost" wire:click="$set('showManualTransferModal', false)">{{ __('Batal') }}</flux:button>
+                <flux:button class="flex-1" type="submit" variant="primary" icon="paper-airplane" wire:loading.attr="disabled">
+                    {{ __('Kirim Bukti & WA') }}
+                </flux:button>
+            </div>
+        </form>
     </flux:modal>
 </div>
