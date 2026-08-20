@@ -35,6 +35,7 @@ class ClassIndex extends Component
         $class = SchoolClass::findOrFail($id);
         if ($class->students()->exists()) {
             session()->flash('error', __('Tidak dapat menghapus kelas yang memiliki data siswa.'));
+
             return;
         }
         $class->delete();

@@ -53,7 +53,7 @@ class MidtransCallbackController extends Controller
             DB::beginTransaction();
 
             // 2. Mitigasi Race Condition: Gunakan lockForUpdate (Pessimistic Locking)
-            $invoices = Invoice::whereIn('id', $invoiceIds)->lockForUpdate()->get();
+            $invoices = Invoice::whereIn('id', $invoiceIds, 'and', false)->lockForUpdate()->get();
 
             if ($invoices->count() !== count($invoiceIds)) {
                 DB::rollBack();
@@ -113,8 +113,8 @@ class MidtransCallbackController extends Controller
 
                     // Generate Receipt Number
                     $prefix = 'SCH-'.date('Ym').'-';
-                    $lastPayment = Payment::where('receipt_number', 'like', $prefix.'%')
-                        ->orderBy('id', 'desc')
+                    $lastPayment = Payment::where('receipt_number', 'like', $prefix.'%', 'and')
+                        ->orderBy('receipt_number', 'desc')
                         ->first();
 
                     $sequence = 1;
@@ -135,7 +135,8 @@ class MidtransCallbackController extends Controller
                     ]);
 
                     // Update Invoice status
-                    $invoice->update(['status' => 'paid']);
+                    $invoice->status = 'paid';
+                    $invoice->save();
                 }
 
                 Log::info('Midtrans Callback: Payment success', ['order_id' => $orderId, 'invoices' => $invoiceIds]);
@@ -150,7 +151,8 @@ class MidtransCallbackController extends Controller
                         $isFuture = ($invoice->period_year > $currentYear) ||
                                     ($invoice->period_year == $currentYear && $invoice->period_month > $currentMonth);
 
-                        $invoice->update(['status' => $isFuture ? 'inactive' : 'unpaid']);
+                        $invoice->status = $isFuture ? 'inactive' : 'unpaid';
+                        $invoice->save();
                     }
                 }
                 Log::info('Midtrans Callback: Payment failed/expired', ['order_id' => $orderId, 'status' => $transactionStatus]);

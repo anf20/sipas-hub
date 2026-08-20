@@ -5,9 +5,9 @@ namespace App\Livewire\Pages\Parent;
 use App\Models\Invoice;
 use App\Models\Payment;
 use App\Services\MidtransService;
+use App\Traits\HandlesImageUploads;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Storage;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
 use Livewire\WithFileUploads;
@@ -15,7 +15,7 @@ use Livewire\WithFileUploads;
 #[Layout('layouts.parent')]
 class InvoiceDetail extends Component
 {
-    use WithFileUploads;
+    use HandlesImageUploads, WithFileUploads;
 
     public Invoice $invoice;
 
@@ -75,7 +75,7 @@ class InvoiceDetail extends Component
 
         if ($this->paymentMethod === 'manual_transfer') {
             $this->validate([
-                'proofFile' => 'required|image|max:2048',
+                'proofFile' => 'required|image|max:20480',
             ]);
 
             try {
@@ -89,7 +89,7 @@ class InvoiceDetail extends Component
                 // Generate receipt number (SCH-PEND-YYYYMM-XXXX)
                 $prefix = 'SCH-PEND-'.date('Ym').'-';
                 $lastPayment = Payment::where('receipt_number', 'like', $prefix.'%')
-                    ->orderBy('id', 'desc')
+                    ->orderBy('receipt_number', 'desc')
                     ->first();
 
                 $sequence = 1;
@@ -175,54 +175,5 @@ class InvoiceDetail extends Component
             'serviceFee' => $serviceFee,
             'totalToPay' => $totalToPay,
         ])->title(__('Detail Tagihan'));
-    }
-
-    /**
-     * Compress and convert uploaded image to WebP format.
-     * Falls back to normal upload if GD extension is not available.
-     */
-    private function convertToWebp($uploadedFile): string
-    {
-        try {
-            if (function_exists('imagewebp')) {
-                $path = $uploadedFile->getRealPath();
-
-                // Determine image type and create image resource
-                $image = match (strtolower($uploadedFile->getClientOriginalExtension())) {
-                    'jpg', 'jpeg' => @imagecreatefromjpeg($path),
-                    'png' => @imagecreatefrompng($path),
-                    'webp' => @imagecreatefromwebp($path),
-                    'gif' => @imagecreatefromgif($path),
-                    default => false,
-                };
-
-                if ($image !== false) {
-                    // Preserve transparency for PNG
-                    if (strtolower($uploadedFile->getClientOriginalExtension()) === 'png') {
-                        imagealphablending($image, false);
-                        imagesavealpha($image, true);
-                    }
-
-                    // Capture WebP output using output buffering
-                    ob_start();
-                    if (imagewebp($image, null, 75)) {
-                        $webpData = ob_get_clean();
-                        imagedestroy($image);
-
-                        $filename = 'payment-proofs/'.uniqid().'.webp';
-                        Storage::disk('public')->put($filename, $webpData);
-
-                        return $filename;
-                    }
-                    ob_end_clean();
-                    imagedestroy($image);
-                }
-            }
-        } catch (\Exception $e) {
-            \Log::error('WebP Compression Failed, falling back: '.$e->getMessage());
-        }
-
-        // Fallback to standard Laravel store
-        return $uploadedFile->store('payment-proofs', 'public');
     }
 }

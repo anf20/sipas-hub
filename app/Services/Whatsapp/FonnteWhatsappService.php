@@ -13,38 +13,40 @@ class FonnteWhatsappService implements WhatsappServiceInterface
     public function sendMessage(string $phone, string $message): array
     {
         $token = config('services.whatsapp.fonnte_token');
-        
+        $testNumber = config('services.whatsapp.test_number');
+        $targetPhone = $testNumber ?: $phone;
+
         try {
             $response = Http::withHeaders([
                 'Authorization' => $token,
             ])->post('https://api.fonnte.com/send', [
-                'target' => $phone,
+                'target' => $targetPhone,
                 'message' => $message,
                 'countryCode' => '62', // Optional: force ID code if not formatted
             ]);
-            
+
             if ($response->successful()) {
                 return [
                     'success' => true,
                     'status' => 'sent',
                     'response' => $response->json(),
-                    'target' => $phone
+                    'target' => $targetPhone,
                 ];
             }
-            
+
             return [
                 'success' => false,
                 'status' => 'failed',
                 'error' => $response->body(),
-                'target' => $phone
+                'target' => $targetPhone,
             ];
-            
+
         } catch (\Exception $e) {
             return [
                 'success' => false,
                 'status' => 'failed',
                 'error' => $e->getMessage(),
-                'target' => $phone
+                'target' => $targetPhone,
             ];
         }
     }

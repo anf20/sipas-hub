@@ -26,6 +26,7 @@ class AcademicYearIndex extends Component
         $year = AcademicYear::findOrFail($id);
         if ($year->schoolClasses()->exists()) {
             session()->flash('error', __('Tidak dapat menghapus Tahun Ajaran yang memiliki data kelas.'));
+
             return;
         }
         $year->delete();

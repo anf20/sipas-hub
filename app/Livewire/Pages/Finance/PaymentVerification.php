@@ -60,7 +60,7 @@ class PaymentVerification extends Component
             $prefix = 'SCH-'.date('Ym').'-';
             $lastPayment = Payment::where('receipt_number', 'like', $prefix.'%')
                 ->where('status', 'success')
-                ->orderBy('id', 'desc')
+                ->orderBy('receipt_number', 'desc')
                 ->first();
 
             $sequence = 1;

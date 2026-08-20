@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\FinanceReportController;
+use App\Http\Controllers\ReceiptController;
 use App\Livewire\Pages\Finance\FeeTypeCreate;
 use App\Livewire\Pages\Finance\FeeTypeEdit;
 use App\Livewire\Pages\Finance\FeeTypeIndex;
@@ -28,6 +29,7 @@ Route::middleware(['auth', 'verified'])->prefix('finance')->name('finance.')->gr
 
     Route::get('invoices/manual-payment', PaymentManual::class)->name('invoice.manual-payment');
     Route::get('payments/verification', PaymentVerification::class)->name('payments.verification');
+    Route::get('payments/{payment}/receipt', [ReceiptController::class, 'download'])->name('payments.receipt');
 
     // WA Blast
     Route::get('fee-types/{feeType}/whatsapp-blast', WhatsappBlastFee::class)->name('fee-types.whatsapp-blast');

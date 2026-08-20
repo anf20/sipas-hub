@@ -47,13 +47,25 @@ class StudentIndex extends Component
                 });
             })
             ->when($this->classFilter, function ($query) {
-                $query->where('school_class_id', $this->classFilter);
+                if (str_starts_with($this->classFilter, 'grade:')) {
+                    $grade = substr($this->classFilter, 6);
+                    $query->where(function ($sub) use ($grade) {
+                        $sub->where('current_grade', $grade)
+                            ->orWhereHas('schoolClass', function ($q) use ($grade) {
+                                $q->where('grade', $grade);
+                            });
+                    });
+                } else {
+                    $query->where('school_class_id', $this->classFilter);
+                }
             })
             ->latest();
 
+        $classesByGrade = SchoolClass::orderBy('grade')->orderBy('name')->get()->groupBy('grade');
+
         return view('livewire.pages.academic.student-index', [
             'students' => $studentsQuery->paginate(10),
-            'allClasses' => SchoolClass::orderBy('name')->get(),
+            'classesByGrade' => $classesByGrade,
         ])->title(__('Data Siswa'));
     }
 }

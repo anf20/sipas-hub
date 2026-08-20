@@ -5,9 +5,10 @@ namespace App\Livewire\Pages\Parent;
 use App\Models\Invoice;
 use App\Models\Payment;
 use App\Services\MidtransService;
+use App\Traits\HandlesImageUploads;
+use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Storage;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
 use Livewire\WithFileUploads;
@@ -15,7 +16,7 @@ use Livewire\WithFileUploads;
 #[Layout('layouts.parent')]
 class Invoices extends Component
 {
-    use WithFileUploads;
+    use HandlesImageUploads, WithFileUploads;
 
     public $filter = 'all';
 
@@ -171,7 +172,7 @@ class Invoices extends Component
 
         if ($this->paymentMethod === 'manual_transfer') {
             $this->validate([
-                'proofFile' => 'required|image|max:2048',
+                'proofFile' => 'required|image|max:20480',
             ]);
 
             try {
@@ -194,7 +195,7 @@ class Invoices extends Component
 
                 // Get the starting sequence
                 $lastPayment = Payment::where('receipt_number', 'like', $prefix.'%')
-                    ->orderBy('id', 'desc')
+                    ->orderBy('receipt_number', 'desc')
                     ->first();
                 $sequence = 1;
                 if ($lastPayment) {
@@ -271,6 +272,20 @@ class Invoices extends Component
         }
     }
 
+    public function toggleMonthSelection(array $invoiceIds)
+    {
+        $stringIds = array_map('strval', $invoiceIds);
+        $allSelected = count(array_intersect($stringIds, $this->selectedInvoices)) === count($stringIds);
+
+        if ($allSelected) {
+            $this->selectedInvoices = array_values(array_diff($this->selectedInvoices, $stringIds));
+        } else {
+            $this->selectedInvoices = array_values(array_unique(array_merge($this->selectedInvoices, $stringIds)));
+        }
+
+        $this->updatedSelectedInvoices();
+    }
+
     public function render()
     {
         $user = Auth::user();
@@ -306,8 +321,49 @@ class Invoices extends Component
             ->where('status', 'unpaid')
             ->count();
 
-        // Group invoices by student name
-        $groupedInvoices = $invoices->groupBy(fn ($invoice) => $invoice->student->name);
+        // Group invoices by student name, then by Year-Month descending
+        $groupedInvoices = $invoices->groupBy(fn ($invoice) => $invoice->student->name)
+            ->map(function ($studentInvoices) {
+                return $studentInvoices->groupBy(function ($invoice) {
+                    $year = $invoice->period_year ?: $invoice->due_date->year;
+                    $month = $invoice->period_month ?: $invoice->due_date->month;
+
+                    return sprintf('%04d-%02d', $year, $month);
+                })->sortKeysDesc()->map(function ($monthInvoices, $periodKey) {
+                    $first = $monthInvoices->first();
+                    $year = $first->period_year ?: $first->due_date->year;
+                    $month = $first->period_month ?: $first->due_date->month;
+                    $monthName = Carbon::create($year, $month, 1)->translatedFormat('F');
+                    $periodLabel = "{$monthName} {$year}";
+
+                    $totalAmount = $monthInvoices->sum('amount');
+                    $unpaidAmount = $monthInvoices->where('status', 'unpaid')->sum('amount');
+                    $unpaidCount = $monthInvoices->where('status', 'unpaid')->count();
+                    $pendingCount = $monthInvoices->where('status', 'pending')->count();
+                    $paidCount = $monthInvoices->where('status', 'paid')->count();
+                    $inactiveCount = $monthInvoices->where('status', 'inactive')->count();
+                    $isAllPaid = $paidCount === $monthInvoices->count() && $monthInvoices->isNotEmpty();
+                    $hasUnpaid = $unpaidCount > 0;
+                    $hasOverdue = $monthInvoices->contains(fn ($inv) => $inv->status === 'unpaid' && $inv->due_date->isPast());
+                    $payableIds = $monthInvoices->whereIn('status', ['unpaid', 'inactive'])->pluck('id')->map(fn ($id) => (string) $id)->toArray();
+
+                    return (object) [
+                        'periodKey' => $periodKey,
+                        'periodLabel' => $periodLabel,
+                        'invoices' => $monthInvoices,
+                        'totalAmount' => $totalAmount,
+                        'unpaidAmount' => $unpaidAmount,
+                        'unpaidCount' => $unpaidCount,
+                        'pendingCount' => $pendingCount,
+                        'paidCount' => $paidCount,
+                        'inactiveCount' => $inactiveCount,
+                        'isAllPaid' => $isAllPaid,
+                        'hasUnpaid' => $hasUnpaid,
+                        'hasOverdue' => $hasOverdue,
+                        'payableIds' => $payableIds,
+                    ];
+                });
+            });
 
         return view('livewire.pages.parent.invoices', [
             'invoices' => $invoices,
@@ -319,54 +375,5 @@ class Invoices extends Component
             'selectedInvoicesData' => $selectedInvoicesData,
             'unpaidCount' => $unpaidCount,
         ])->title(__('Tagihan Anak'));
-    }
-
-    /**
-     * Compress and convert uploaded image to WebP format.
-     * Falls back to normal upload if GD extension is not available.
-     */
-    private function convertToWebp($uploadedFile): string
-    {
-        try {
-            if (function_exists('imagewebp')) {
-                $path = $uploadedFile->getRealPath();
-
-                // Determine image type and create image resource
-                $image = match (strtolower($uploadedFile->getClientOriginalExtension())) {
-                    'jpg', 'jpeg' => @imagecreatefromjpeg($path),
-                    'png' => @imagecreatefrompng($path),
-                    'webp' => @imagecreatefromwebp($path),
-                    'gif' => @imagecreatefromgif($path),
-                    default => false,
-                };
-
-                if ($image !== false) {
-                    // Preserve transparency for PNG
-                    if (strtolower($uploadedFile->getClientOriginalExtension()) === 'png') {
-                        imagealphablending($image, false);
-                        imagesavealpha($image, true);
-                    }
-
-                    // Capture WebP output using output buffering
-                    ob_start();
-                    if (imagewebp($image, null, 75)) {
-                        $webpData = ob_get_clean();
-                        imagedestroy($image);
-
-                        $filename = 'payment-proofs/'.uniqid().'.webp';
-                        Storage::disk('public')->put($filename, $webpData);
-
-                        return $filename;
-                    }
-                    ob_end_clean();
-                    imagedestroy($image);
-                }
-            }
-        } catch (\Exception $e) {
-            \Log::error('WebP Compression Failed, falling back: '.$e->getMessage());
-        }
-
-        // Fallback to standard Laravel store
-        return $uploadedFile->store('payment-proofs', 'public');
     }
 }

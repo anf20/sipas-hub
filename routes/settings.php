@@ -1,5 +1,6 @@
 <?php
 
+use App\Livewire\Pages\Settings\NotificationCenter;
 use Illuminate\Support\Facades\Route;
 use Laravel\Fortify\Features;
 
@@ -23,5 +24,5 @@ Route::middleware(['auth', 'verified'])->group(function () {
         )
         ->name('security.edit');
 
-    Route::get('settings/notifications', \App\Livewire\Pages\Settings\NotificationCenter::class)->name('settings.notifications');
+    Route::get('settings/notifications', NotificationCenter::class)->name('settings.notifications');
 });

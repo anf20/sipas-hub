@@ -2,9 +2,10 @@
 
 namespace App\Livewire\Pages\Finance;
 
-use App\Jobs\GenerateInvoices;
+use App\Jobs\GenerateYearlyInvoiceJob;
 use App\Models\FeeType;
-use Illuminate\Support\Facades\Log;
+use App\Models\Invoice;
+use App\Models\Student;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
 use Livewire\WithPagination;
@@ -47,6 +48,7 @@ class SppIndex extends Component
         $latestSpp = FeeType::where('category', 'SPP')->latest()->first();
         if (! $latestSpp) {
             \Flux::toast(__('Tidak ada catatan SPP yang aktif.'), variant: 'danger');
+
             return;
         }
 
@@ -54,11 +56,11 @@ class SppIndex extends Component
         $latestSpp->update(['default_amount' => $this->adjust_amount]);
 
         // 2. Update all unpaid and inactive invoices for this FeeType
-        $updatedCount = \App\Models\Invoice::where('fee_type_id', $latestSpp->id)
+        $updatedCount = Invoice::where('fee_type_id', $latestSpp->id)
             ->whereIn('status', ['unpaid', 'inactive'])
             ->update(['amount' => $this->adjust_amount]);
 
-        \Flux::toast(__("Berhasil menyesuaikan nominal SPP menjadi Rp " . number_format($this->adjust_amount, 0, ',', '.') . " untuk {$updatedCount} tagihan yang belum lunas."), variant: 'success');
+        \Flux::toast(__('Berhasil menyesuaikan nominal SPP menjadi Rp '.number_format($this->adjust_amount, 0, ',', '.')." untuk {$updatedCount} tagihan yang belum lunas."), variant: 'success');
 
         $this->dispatch('close-modal', 'adjust-spp-modal');
     }
@@ -80,6 +82,7 @@ class SppIndex extends Component
 
         if ($isAlreadyGenerated) {
             \Flux::toast(__("SPP untuk {$name} sudah dibuat sebelumnya!"), variant: 'danger');
+
             return;
         }
 
@@ -94,11 +97,11 @@ class SppIndex extends Component
             'is_active' => true,
         ]);
 
-        $activeStudents = \App\Models\Student::where('status', 'aktif')->pluck('id');
+        $activeStudents = Student::where('status', 'aktif')->pluck('id');
         $adminId = auth()->id();
 
         foreach ($activeStudents as $studentId) {
-            \App\Jobs\GenerateYearlyInvoiceJob::dispatch(
+            GenerateYearlyInvoiceJob::dispatch(
                 $studentId,
                 $feeType->id,
                 $this->default_amount,
@@ -112,7 +115,7 @@ class SppIndex extends Component
 
         // Reset inputs after success
         $this->year = (int) date('Y');
-        
+
         $this->dispatch('close-modal', 'generate-spp-modal');
     }
 
@@ -138,30 +141,30 @@ class SppIndex extends Component
             })->where('status', '!=', 'inactive');
         };
 
-        $invoiceQuery = \App\Models\Invoice::whereHas('feeType', function ($q) {
+        $invoiceQuery = Invoice::whereHas('feeType', function ($q) {
             $q->where('category', 'SPP');
         })
-        ->where(function ($q) use ($activeStartYear, $activeEndYear) {
-            $q->where(function ($sub) use ($activeStartYear) {
-                $sub->where('period_year', $activeStartYear)->where('period_month', '>=', 7);
-            })->orWhere(function ($sub) use ($activeEndYear) {
-                $sub->where('period_year', $activeEndYear)->where('period_month', '<=', 6);
+            ->where(function ($q) use ($activeStartYear, $activeEndYear) {
+                $q->where(function ($sub) use ($activeStartYear) {
+                    $sub->where('period_year', $activeStartYear)->where('period_month', '>=', 7);
+                })->orWhere(function ($sub) use ($activeEndYear) {
+                    $sub->where('period_year', $activeEndYear)->where('period_month', '<=', 6);
+                });
             });
-        });
 
         if ($this->viewMode === 'current_month') {
             $invoiceQuery->where(function ($q) {
                 $currentYear = (int) date('Y');
                 $currentMonth = (int) date('n');
                 $q->where('period_year', '<', $currentYear)
-                  ->orWhere(function ($sub) use ($currentYear, $currentMonth) {
-                      $sub->where('period_year', $currentYear)->where('period_month', '<=', $currentMonth);
-                  });
+                    ->orWhere(function ($sub) use ($currentYear, $currentMonth) {
+                        $sub->where('period_year', $currentYear)->where('period_month', '<=', $currentMonth);
+                    });
             })->where('status', '!=', 'inactive');
         }
 
         $sppMonthlyTable = $invoiceQuery
-        ->selectRaw("
+            ->selectRaw("
             period_year,
             period_month,
             SUM(CASE WHEN status = 'paid' THEN amount ELSE 0 END) as total_paid,
@@ -169,25 +172,25 @@ class SppIndex extends Component
             SUM(CASE WHEN status = 'paid' THEN 1 ELSE 0 END) as count_paid,
             COUNT(id) as count_total
         ")
-        ->groupBy('period_year', 'period_month')
-        ->orderBy('period_year', 'asc')
-        ->orderBy('period_month', 'asc')
-        ->paginate(12, ['*'], 'sppPage');
+            ->groupBy('period_year', 'period_month')
+            ->orderBy('period_year', 'asc')
+            ->orderBy('period_month', 'asc')
+            ->paginate(12, ['*'], 'sppPage');
 
         $currentDate = now();
         $lastMonthDate = now()->subMonth();
 
-        $sppCurrentMonthQuery = \App\Models\Invoice::whereHas('feeType', function ($query) {
+        $sppCurrentMonthQuery = Invoice::whereHas('feeType', function ($query) {
             $query->where('category', 'SPP');
         })->where('period_year', $currentDate->year)
-          ->where('period_month', $currentDate->month)
-          ->where('status', '!=', 'inactive');
+            ->where('period_month', $currentDate->month)
+            ->where('status', '!=', 'inactive');
 
-        $sppLastMonthQuery = \App\Models\Invoice::whereHas('feeType', function ($query) {
+        $sppLastMonthQuery = Invoice::whereHas('feeType', function ($query) {
             $query->where('category', 'SPP');
         })->where('period_year', $lastMonthDate->year)
-          ->where('period_month', $lastMonthDate->month)
-          ->where('status', '!=', 'inactive');
+            ->where('period_month', $lastMonthDate->month)
+            ->where('status', '!=', 'inactive');
 
         $sppTotalInvoiced = (float) (clone $sppCurrentMonthQuery)->sum('amount');
         $sppTotalInvoicedCount = (clone $sppCurrentMonthQuery)->count();

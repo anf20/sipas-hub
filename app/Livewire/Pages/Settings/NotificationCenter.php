@@ -41,16 +41,16 @@ class NotificationCenter extends Component
     public function render()
     {
         $logsQuery = WhatsappLog::with(['user', 'feeType'])->orderBy('created_at', 'desc');
-        
+
         if ($this->search) {
-            $logsQuery->where(function($q) {
-                $q->where('phone', 'like', '%' . $this->search . '%')
-                  ->orWhereHas('user', function($uq) {
-                      $uq->where('name', 'like', '%' . $this->search . '%');
-                  });
+            $logsQuery->where(function ($q) {
+                $q->where('phone', 'like', '%'.$this->search.'%')
+                    ->orWhereHas('user', function ($uq) {
+                        $uq->where('name', 'like', '%'.$this->search.'%');
+                    });
             });
         }
-        
+
         if ($this->statusFilter) {
             $logsQuery->where('status', $this->statusFilter);
         }

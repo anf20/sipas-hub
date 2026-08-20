@@ -253,12 +253,27 @@
                 </div>
 
                 <div class="space-y-2">
-                    <flux:select wire:model="paymentMethod" label="{{ __('Metode Pembayaran') }}">
+                    <flux:select wire:model.live="paymentMethod" label="{{ __('Metode Pembayaran') }}">
                         <flux:select.option value="cash">{{ __('Tunai (Cash)') }}</flux:select.option>
                         <flux:select.option value="transfer">{{ __('Transfer Bank') }}</flux:select.option>
                     </flux:select>
                     <flux:error name="paymentMethod" />
                 </div>
+
+                @if($paymentMethod === 'transfer')
+                    <div class="space-y-2">
+                        <flux:label class="font-semibold mb-1">{{ __('Upload Bukti Transfer (Foto/Gambar)') }}</flux:label>
+                        <flux:input type="file" wire:model="proofFile" accept="image/*" class="!bg-white dark:!bg-zinc-800" required />
+                        <flux:error name="proofFile" />
+                        
+                        @if($proofFile && !$errors->has('proofFile'))
+                            <div class="mt-2 text-xs text-green-600 flex items-center gap-1 font-medium">
+                                <flux:icon.check-circle variant="mini" class="size-4" />
+                                {{ __('Gambar berhasil dipilih.') }}
+                            </div>
+                        @endif
+                    </div>
+                @endif
                 
                 <flux:error name="selectedInvoiceId" />
             </div>

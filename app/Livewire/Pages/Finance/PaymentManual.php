@@ -5,14 +5,18 @@ namespace App\Livewire\Pages\Finance;
 use App\Models\Invoice;
 use App\Models\Payment;
 use App\Models\Student;
+use App\Traits\HandlesImageUploads;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
+use Livewire\WithFileUploads;
 
 #[Layout('layouts.app')]
 class PaymentManual extends Component
 {
+    use HandlesImageUploads, WithFileUploads;
+
     public $search = '';
 
     public $selectedStudentId = null;
@@ -23,6 +27,8 @@ class PaymentManual extends Component
     public $paymentMethod = 'cash';
 
     public $paymentAmount = 0;
+
+    public $proofFile;
 
     public function selectStudent($id)
     {
@@ -48,6 +54,7 @@ class PaymentManual extends Component
         $this->selectedInvoiceId = null;
         $this->paymentAmount = 0;
         $this->paymentMethod = 'cash';
+        $this->proofFile = null;
         $this->resetErrorBag();
     }
 
@@ -57,6 +64,7 @@ class PaymentManual extends Component
             'selectedInvoiceId' => 'required|exists:invoices,id',
             'paymentMethod' => 'required|in:cash,transfer',
             'paymentAmount' => 'required|numeric|min:1',
+            'proofFile' => $this->paymentMethod === 'transfer' ? 'required|image|max:20480' : 'nullable',
         ]);
 
         try {
@@ -67,7 +75,7 @@ class PaymentManual extends Component
             // Generate receipt number (SCH-YYYYMM-XXXX)
             $prefix = 'SCH-'.date('Ym').'-';
             $lastPayment = Payment::where('receipt_number', 'like', $prefix.'%')
-                ->orderBy('id', 'desc')
+                ->orderBy('receipt_number', 'desc')
                 ->first();
 
             $sequence = 1;
@@ -77,20 +85,26 @@ class PaymentManual extends Component
             }
             $receiptNumber = $prefix.str_pad($sequence, 4, '0', STR_PAD_LEFT);
 
+            $path = null;
+            if ($this->paymentMethod === 'transfer' && $this->proofFile) {
+                $path = $this->convertToWebp($this->proofFile);
+            }
+
             // Create Payment Record
             Payment::create([
                 'invoice_id' => $invoice->id,
                 'amount' => $this->paymentAmount,
                 'method' => $this->paymentMethod,
+                'status' => 'success',
+                'proof_file' => $path,
                 'paid_at' => now(),
                 'receipt_number' => $receiptNumber,
                 'recorded_by' => auth()->id(),
             ]);
 
             // Update Invoice
-            $invoice->update([
-                'status' => 'paid',
-            ]);
+            $invoice->status = 'paid';
+            $invoice->save();
 
             DB::commit();
 

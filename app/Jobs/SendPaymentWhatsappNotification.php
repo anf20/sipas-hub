@@ -18,6 +18,7 @@ class SendPaymentWhatsappNotification implements ShouldQueue
     use Batchable, Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
     public $userId;
+
     public $invoiceIds;
 
     public $customMessageTemplate;
@@ -52,18 +53,19 @@ class SendPaymentWhatsappNotification implements ShouldQueue
             return;
         }
 
-        $user = User::with(['students.invoices' => function($query) {
+        $user = User::with(['students.invoices' => function ($query) {
             $query->whereIn('id', $this->invoiceIds);
         }, 'students.invoices.feeType'])->find($this->userId);
 
-        if (!$user || !$user->phone) {
-            $this->logFailed($user && $user->phone ? $user->phone : 'unknown', "User tidak ditemukan atau nomor HP kosong.");
+        if (! $user || ! $user->phone) {
+            $this->logFailed($user && $user->phone ? $user->phone : 'unknown', 'User tidak ditemukan atau nomor HP kosong.');
+
             return;
         }
 
         // --- GROUPING LOGIC ---
         // Menggabungkan seluruh tagihan milik semua anak ke dalam 1 pesan WA saja.
-        $studentDetails = "";
+        $studentDetails = '';
         $totalAll = 0;
         $hasInvoices = false;
         $invoiceDetails = [];
@@ -71,12 +73,14 @@ class SendPaymentWhatsappNotification implements ShouldQueue
 
         foreach ($user->students as $student) {
             $invoices = $student->invoices;
-            if ($invoices->isEmpty()) continue;
-            
+            if ($invoices->isEmpty()) {
+                continue;
+            }
+
             $hasInvoices = true;
-            $studentDetails .= "\n🎓 *" . $student->name . "*\n";
+            $studentDetails .= "\n🎓 *".$student->name."*\n";
             $subTotal = 0;
-            
+
             foreach ($invoices as $invoice) {
                 $feeName = $invoice->feeType->name; // Ambil dari invoice pertama
                 $subTotal += $invoice->amount;
@@ -86,18 +90,19 @@ class SendPaymentWhatsappNotification implements ShouldQueue
                     'fee' => $invoice->feeType->name,
                     'amount' => $invoice->amount,
                 ];
-                $studentDetails .= "- " . $invoice->feeType->name . " (Rp " . number_format($invoice->amount, 0, ',', '.') . ")\n";
+                $studentDetails .= '- '.$invoice->feeType->name.' (Rp '.number_format($invoice->amount, 0, ',', '.').")\n";
             }
             $totalAll += $subTotal;
         }
 
-        if (!$hasInvoices) {
-            $this->logFailed($user->phone, "Tagihan tidak ditemukan berdasarkan ID yang diberikan.");
+        if (! $hasInvoices) {
+            $this->logFailed($user->phone, 'Tagihan tidak ditemukan berdasarkan ID yang diberikan.');
+
             return;
         }
 
-        $formattedTotal = "Rp " . number_format($totalAll, 0, ',', '.');
-        
+        $formattedTotal = 'Rp '.number_format($totalAll, 0, ',', '.');
+
         $firstInvoice = $user->students->first()->invoices->first();
         $monthNumber = $firstInvoice ? $firstInvoice->period_month : null;
         $months = [
@@ -106,7 +111,7 @@ class SendPaymentWhatsappNotification implements ShouldQueue
             9 => 'September', 10 => 'Oktober', 11 => 'November', 12 => 'Desember',
         ];
         $monthName = $monthNumber ? ($months[$monthNumber] ?? '') : '';
-        
+
         // Memasukkan data ke dalam template dinamis
         $message = str_replace(
             ['{fee_name}', '{student_details}', '{total_amount}', '{month_name}'],
@@ -132,15 +137,15 @@ class SendPaymentWhatsappNotification implements ShouldQueue
         ]);
 
         // Jika gateway menolak/gagal, lempar Exception agar Laravel me-retry job ini (berdasarkan $tries & $backoff)
-        if (!$response['success']) {
-            throw new \Exception("WhatsApp Gateway Error: " . $errorMessage);
+        if (! $response['success']) {
+            throw new \Exception('WhatsApp Gateway Error: '.$errorMessage);
         }
     }
 
     private function logFailed(string $phone, string $reason)
     {
         $feeTypeId = Invoice::whereIn('id', $this->invoiceIds)->value('fee_type_id');
-        
+
         WhatsappLog::create([
             'user_id' => $this->userId,
             'fee_type_id' => $feeTypeId,

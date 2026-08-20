@@ -15,7 +15,12 @@
         <form wire:submit="save" class="space-y-6 max-w-2xl">
             <flux:card>
                 <div class="space-y-6">
-                    <flux:heading size="lg">{{ __('Detail Kelas') }}</flux:heading>
+                    <div class="flex justify-between items-center mb-2">
+                        <flux:heading size="lg">{{ __('Detail Kelas') }}</flux:heading>
+                        <flux:button :href="route('academic.import', ['type' => 'classes'])" variant="subtle" size="sm" icon="document-arrow-up" wire:navigate>
+                            {{ __('Import dari Excel') }}
+                        </flux:button>
+                    </div>
 
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <flux:input wire:model="name" label="{{ __('Nama Kelas') }}" placeholder="Contoh: X IPA 1" required />

@@ -2,6 +2,9 @@
 
 namespace App\Providers;
 
+use App\Services\Contracts\WhatsappServiceInterface;
+use App\Services\Whatsapp\FonnteWhatsappService;
+use App\Services\Whatsapp\LogWhatsappService;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
@@ -15,14 +18,14 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        $this->app->singleton(\App\Services\Contracts\WhatsappServiceInterface::class, function ($app) {
+        $this->app->singleton(WhatsappServiceInterface::class, function ($app) {
             $driver = config('services.whatsapp.driver', 'log');
-            
+
             if ($driver === 'fonnte') {
-                return new \App\Services\Whatsapp\FonnteWhatsappService();
+                return new FonnteWhatsappService;
             }
-            
-            return new \App\Services\Whatsapp\LogWhatsappService();
+
+            return new LogWhatsappService;
         });
     }
 

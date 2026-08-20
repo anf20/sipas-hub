@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Traits\Auditable;
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -50,7 +51,8 @@ class Invoice extends Model
     public function getBillingDetailAttribute(): string
     {
         if ($this->feeType && $this->feeType->category === 'SPP' && $this->period_month) {
-            $monthName = \Carbon\Carbon::create()->month($this->period_month)->translatedFormat('F');
+            $monthName = Carbon::create()->month($this->period_month)->translatedFormat('F');
+
             return "SPP Bulan {$monthName} {$this->period_year}";
         }
 

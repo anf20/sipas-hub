@@ -9,7 +9,10 @@
     <div class="space-y-4">
         <div class="flex justify-between items-center">
             <flux:heading size="xl">{{ __('Daftar Kelas') }}</flux:heading>
-            <flux:button :href="route('academic.classes.create')" variant="primary" icon="plus" wire:navigate>{{ __('Tambah') }}</flux:button>
+            <div class="flex gap-2">
+                <flux:button :href="route('academic.import', ['type' => 'classes'])" variant="subtle" icon="document-arrow-up" wire:navigate>{{ __('Import Excel') }}</flux:button>
+                <flux:button :href="route('academic.classes.create')" variant="primary" icon="plus" wire:navigate>{{ __('Tambah') }}</flux:button>
+            </div>
         </div>
 
         <!-- Filters -->
@@ -19,6 +22,7 @@
             </div>
             <div class="w-full md:w-64">
                 <flux:select wire:model.live="yearFilter" placeholder="{{ __('Semua Tahun Ajaran') }}" clearable>
+                    <flux:select.option value="">{{ __('Semua Tahun Ajaran') }}</flux:select.option>
                     @foreach($years as $year)
                         <flux:select.option :value="$year->id">{{ $year->name }}</flux:select.option>
                     @endforeach

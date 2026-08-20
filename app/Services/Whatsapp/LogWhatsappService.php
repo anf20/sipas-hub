@@ -16,17 +16,17 @@ class LogWhatsappService implements WhatsappServiceInterface
         $testNumber = config('services.whatsapp.test_number');
         $targetPhone = $testNumber ?: $phone;
 
-        Log::info("=== WHATSAPP MESSAGE (LOG DRIVER) ===");
-        Log::info("Target Phone: " . $targetPhone . ($testNumber ? " (Intercepted from $phone)" : ""));
-        Log::info("Message:\n" . $message);
-        Log::info("=====================================");
+        Log::info('=== WHATSAPP MESSAGE (LOG DRIVER) ===');
+        Log::info('Target Phone: '.$targetPhone.($testNumber ? " (Intercepted from $phone)" : ''));
+        Log::info("Message:\n".$message);
+        Log::info('=====================================');
 
         // Return a dummy successful response
         return [
             'success' => true,
             'status' => 'sent',
             'response' => 'Logged successfully for local testing.',
-            'target' => $targetPhone
+            'target' => $targetPhone,
         ];
     }
 }

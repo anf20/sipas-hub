@@ -2,8 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Invoice;
 use App\Models\Payment;
 use Barryvdh\DomPDF\Facade\Pdf;
+use Illuminate\Http\Request;
 
 class FinanceReportController extends Controller
 {
@@ -26,20 +28,22 @@ class FinanceReportController extends Controller
         return $pdf->download('laporan-pembayaran-'.date('YmdHis').'.pdf');
     }
 
-    public function exportCashflowPdf(\Illuminate\Http\Request $request)
+    public function exportCashflowPdf(Request $request)
     {
         $startDate = $request->query('start', now()->startOfMonth()->format('Y-m-d'));
         $endDate = $request->query('end', now()->endOfMonth()->format('Y-m-d'));
         $category = $request->query('category', 'all');
         $paymentMethod = $request->query('method', 'all');
         $search = $request->query('search', '');
+        $selectedGrade = $request->query('grade', 'all');
+        $selectedClass = $request->query('class', 'all');
 
-        $start = $startDate . ' 00:00:00';
-        $end = $endDate . ' 23:59:59';
+        $start = $startDate.' 00:00:00';
+        $end = $endDate.' 23:59:59';
 
         // 1. FILTERED PAYMENTS QUERY
         $paymentsQuery = Payment::whereBetween('paid_at', [$start, $end])
-            ->where(function($q) {
+            ->where(function ($q) {
                 $q->where('status', 'success')->orWhereNull('status');
             });
 
@@ -61,18 +65,30 @@ class FinanceReportController extends Controller
             });
         }
 
-        if (!empty($search)) {
+        if (! empty($search)) {
             $paymentsQuery->where(function ($q) use ($search) {
-                $q->where('receipt_number', 'like', '%' . $search . '%')
-                  ->orWhereHas('invoice.student', function ($q2) use ($search) {
-                      $q2->where('name', 'like', '%' . $search . '%')
-                         ->orWhere('nis', 'like', '%' . $search . '%');
-                  });
+                $q->where('receipt_number', 'like', '%'.$search.'%')
+                    ->orWhereHas('invoice.student', function ($q2) use ($search) {
+                        $q2->where('name', 'like', '%'.$search.'%')
+                            ->orWhere('nis', 'like', '%'.$search.'%');
+                    });
+            });
+        }
+
+        if ($selectedGrade !== 'all') {
+            $paymentsQuery->whereHas('invoice.student.schoolClass', function ($q) use ($selectedGrade) {
+                $q->where('grade', $selectedGrade);
+            });
+        }
+
+        if ($selectedClass !== 'all') {
+            $paymentsQuery->whereHas('invoice.student', function ($q) use ($selectedClass) {
+                $q->where('school_class_id', $selectedClass);
             });
         }
 
         // 2. FILTERED INVOICES QUERY
-        $invoicesQuery = \App\Models\Invoice::whereDate('due_date', '>=', $startDate)
+        $invoicesQuery = Invoice::whereDate('due_date', '>=', $startDate)
             ->whereDate('due_date', '<=', $endDate);
         if ($category !== 'all') {
             $invoicesQuery->whereHas('feeType', function ($q) use ($category) {
@@ -81,6 +97,18 @@ class FinanceReportController extends Controller
                 } else {
                     $q->where('category', '!=', 'SPP');
                 }
+            });
+        }
+
+        if ($selectedGrade !== 'all') {
+            $invoicesQuery->whereHas('student.schoolClass', function ($q) use ($selectedGrade) {
+                $q->where('grade', $selectedGrade);
+            });
+        }
+
+        if ($selectedClass !== 'all') {
+            $invoicesQuery->whereHas('student', function ($q) use ($selectedClass) {
+                $q->where('school_class_id', $selectedClass);
             });
         }
 
@@ -116,7 +144,7 @@ class FinanceReportController extends Controller
                 'rate' => $catRate,
             ];
         }
-        usort($breakdown, fn($a, $b) => $b['target'] <=> $a['target']);
+        usort($breakdown, fn ($a, $b) => $b['target'] <=> $a['target']);
 
         // 5. LEDGER TRANSAKSI (LAMPIRAN)
         $payments = (clone $paymentsQuery)->with(['invoice.student', 'invoice.feeType', 'recorder'])

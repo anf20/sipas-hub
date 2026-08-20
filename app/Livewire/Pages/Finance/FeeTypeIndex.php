@@ -31,14 +31,14 @@ class FeeTypeIndex extends Component
     public function render()
     {
         $feeTypes = FeeType::where('category', '!=', 'SPP')
-            ->withSum(['invoices as total_paid_amount' => function($q) {
+            ->withSum(['invoices as total_paid_amount' => function ($q) {
                 $q->where('status', 'paid');
             }], 'amount')
-            ->withSum(['invoices as total_unpaid_amount' => function($q) {
+            ->withSum(['invoices as total_unpaid_amount' => function ($q) {
                 $q->where('status', 'unpaid');
             }], 'amount')
             ->withCount('invoices as total_invoices')
-            ->withCount(['invoices as paid_invoices' => function($q) {
+            ->withCount(['invoices as paid_invoices' => function ($q) {
                 $q->where('status', 'paid');
             }])
             ->latest()

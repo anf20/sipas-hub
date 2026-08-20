@@ -182,7 +182,6 @@
                     <flux:radio value="bri_va" label="BRI Virtual Account" description="Biaya Flat Rp 4.500" />
                     <flux:radio value="echannel" label="Mandiri Bill Payment" description="Biaya Flat Rp 4.500" />
                     <flux:radio value="qris" label="QRIS (Gopay/Dana/OVO)" description="Biaya Layanan 0.7%" />
-                    <flux:radio value="dana" label="Dana (Direct)" description="Biaya Layanan 1.5%" />
                 </flux:radio.group>
             </div>
 

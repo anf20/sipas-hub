@@ -9,7 +9,10 @@
     <div class="space-y-4">
         <div class="flex justify-between items-center">
             <flux:heading size="xl">{{ __('Daftar Siswa') }}</flux:heading>
-            <flux:button :href="route('academic.students.create')" variant="primary" icon="plus" wire:navigate>{{ __('Tambah') }}</flux:button>
+            <div class="flex gap-2">
+                <flux:button :href="route('academic.import', ['type' => 'students'])" variant="subtle" icon="document-arrow-up" wire:navigate>{{ __('Import Excel') }}</flux:button>
+                <flux:button :href="route('academic.students.create')" variant="primary" icon="plus" wire:navigate>{{ __('Tambah') }}</flux:button>
+            </div>
         </div>
 
         <!-- Filters -->
@@ -19,8 +22,12 @@
             </div>
             <div class="w-full md:w-64">
                 <flux:select wire:model.live="classFilter" placeholder="{{ __('Semua Kelas') }}" clearable>
-                    @foreach($allClasses as $class)
-                        <flux:select.option :value="$class->id">{{ $class->name }}</flux:select.option>
+                    <flux:select.option value="">{{ __('Semua Kelas') }}</flux:select.option>
+                    @foreach($classesByGrade as $grade => $classes)
+                        <flux:select.option value="grade:{{ $grade }}">{{ __('Semua Kelas (Grade :grade)', ['grade' => $grade]) }}</flux:select.option>
+                        @foreach($classes as $class)
+                            <flux:select.option :value="$class->id">&nbsp;&nbsp;&nbsp;&nbsp;{{ $class->name }}</flux:select.option>
+                        @endforeach
                     @endforeach
                 </flux:select>
             </div>
