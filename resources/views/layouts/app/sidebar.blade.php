@@ -216,7 +216,6 @@
             </flux:toast.group>
         @endpersist
 
-        @fluxScripts
         @stack('scripts')
     </body>
 </html>
