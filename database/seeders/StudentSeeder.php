@@ -59,36 +59,42 @@ class StudentSeeder extends Seeder
             return $firstName.' '.$lastName;
         };
 
-        $this->command->info('Membuat 80 Wali Murid dengan Nama Islami...');
+        $this->command->info('Membuat 175 Akun Wali Santri dengan Nama Islami...');
 
-        // Create exactly 80 parents
+        // Create exactly 175 parents
         $parents = [];
-        for ($i = 1; $i <= 80; $i++) {
+        for ($i = 1; $i <= 175; $i++) {
             $parentGender = rand(0, 1) ? 'L' : 'P';
             $parentName = $generateIslamicName($parentGender);
             $phone = '628'.rand(111111111, 999999999);
 
-            $parent = User::factory()->create([
-                'name' => $parentName,
-                'email' => "wali{$i}@test.com",
-                'phone' => $phone,
-                'password' => Hash::make('password'),
-            ]);
-            $parent->assignRole('Orang Tua');
+            $parent = User::firstOrCreate(
+                ['email' => "wali{$i}@test.com"],
+                [
+                    'name' => 'Wali '.$parentName,
+                    'phone' => $phone,
+                    'password' => Hash::make('password'),
+                ]
+            );
+
+            if (! $parent->hasRole('Orang Tua')) {
+                $parent->assignRole('Orang Tua');
+            }
+
             $parents[] = $parent;
         }
 
-        // We have 80 parents.
-        // 20 parents will have exactly 2 students (40 students).
-        // 60 parents will have exactly 1 student (60 students).
-        // Total students = 100.
+        // We have 175 parents.
+        // 25 parents will have exactly 2 students (50 students).
+        // 150 parents will have exactly 1 student (150 students).
+        // Total students = 200.
         $studentAssignments = [];
 
         $shuffledParents = $parents;
         shuffle($shuffledParents);
 
-        $doubleStudentParents = array_slice($shuffledParents, 0, 20);
-        $singleStudentParents = array_slice($shuffledParents, 20, 60);
+        $doubleStudentParents = array_slice($shuffledParents, 0, 25);
+        $singleStudentParents = array_slice($shuffledParents, 25, 150);
 
         // Build list of students with parent associations
         foreach ($doubleStudentParents as $parent) {
@@ -100,30 +106,34 @@ class StudentSeeder extends Seeder
         }
 
         $totalStudents = count($studentAssignments);
-        $this->command->info("Membuat exactly {$totalStudents} Siswa (Santri)...");
+        $this->command->info("Membuat exactly {$totalStudents} Santri (200 Anak)...");
 
-        // Shuffle students so siblings are not necessarily created adjacently or in same classes
+        // Shuffle students so siblings are not necessarily in same classes
         shuffle($studentAssignments);
 
-        // Assign classes evenly
+        // Assign classes evenly across all 12 classes
         $classCount = $classes->count();
         foreach ($studentAssignments as $index => $assignment) {
             $assignedClass = $classes[$index % $classCount];
             $gender = rand(0, 1) ? 'L' : 'P';
             $studentName = $generateIslamicName($gender);
+            $nis = '2025'.str_pad($index + 1, 4, '0', STR_PAD_LEFT);
 
-            Student::factory()->create([
-                'name' => $studentName,
-                'parent_user_id' => $assignment['parent']->id,
-                'school_class_id' => $assignedClass->id,
-                'current_grade' => $assignedClass->grade,
-                'gender' => $gender,
-                'entry_year' => $assignedClass->academicYear->start_date
-                    ? date('Y', strtotime($assignedClass->academicYear->start_date))
-                    : date('Y'),
-            ]);
+            Student::firstOrCreate(
+                ['nis' => $nis],
+                [
+                    'name' => $studentName,
+                    'parent_user_id' => $assignment['parent']->id,
+                    'school_class_id' => $assignedClass->id,
+                    'current_grade' => $assignedClass->grade,
+                    'gender' => $gender,
+                    'entry_year' => $assignedClass->academicYear->start_date
+                        ? date('Y', strtotime($assignedClass->academicYear->start_date))
+                        : date('Y'),
+                ]
+            );
         }
 
-        $this->command->info('Seeding data Santri & Wali Murid selesai dengan sukses!');
+        $this->command->info('Seeding data 200 Santri & 175 Wali Santri selesai dengan sukses!');
     }
 }

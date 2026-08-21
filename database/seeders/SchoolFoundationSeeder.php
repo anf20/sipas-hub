@@ -59,8 +59,8 @@ class SchoolFoundationSeeder extends Seeder
             );
         }
 
-        // 4. Create Classes for SMP (Grade 7, 8, 9) with 2 sections (A, B) for each Academic Year
-        $grades = ['7', '8', '9'];
+        // 4. Create Classes for 6 Grade Levels (Kelas 1 SMP s/d Kelas 3 SMA) with 2 sections (A, B) for each Academic Year
+        $grades = ['1', '2', '3', '4', '5', '6'];
         $sections = ['A', 'B'];
 
         foreach ($createdAcademicYears as $year) {
@@ -73,7 +73,7 @@ class SchoolFoundationSeeder extends Seeder
                         ],
                         [
                             'grade' => $grade,
-                            'capacity' => 30, // Normal capacity
+                            'capacity' => 35, // Kapasitas 35 siswa per kelas
                             'homeroom_id' => $staffUsers[($gradeIndex + $sectionIndex) % count($staffUsers)]->id,
                         ]
                     );
