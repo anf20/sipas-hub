@@ -5,6 +5,7 @@ namespace Database\Seeders;
 use App\Models\SchoolClass;
 use App\Models\Student;
 use App\Models\User;
+use Carbon\Carbon;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
 
@@ -127,6 +128,9 @@ class StudentSeeder extends Seeder
                     'school_class_id' => $assignedClass->id,
                     'current_grade' => $assignedClass->grade,
                     'gender' => $gender,
+                    'birth_date' => Carbon::create(2010 + (6 - (int) $assignedClass->grade), rand(1, 12), rand(1, 28))->format('Y-m-d'),
+                    'address' => 'Komplek Pondok Pesantren Blok '.chr(65 + rand(0, 5)).' No. '.rand(1, 50),
+                    'status' => 'aktif',
                     'entry_year' => $assignedClass->academicYear->start_date
                         ? date('Y', strtotime($assignedClass->academicYear->start_date))
                         : date('Y'),
