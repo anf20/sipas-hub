@@ -25,6 +25,9 @@
                     <flux:sidebar.item icon="building-library" :href="route('academic.dashboard')" :current="request()->routeIs('academic.dashboard')" wire:navigate>
                         {{ __('Dashboard Akademik') }}
                     </flux:sidebar.item>
+                    <flux:sidebar.item icon="rocket-launch" :href="route('academic.initialization-wizard')" :current="request()->routeIs('academic.initialization-wizard')" wire:navigate>
+                        {{ __('Inisialisasi Sistem') }}
+                    </flux:sidebar.item>
                     @endhasanyrole
                     <flux:sidebar.item icon="users" :href="route('academic.students.index')" :current="request()->routeIs('academic.students.*')" wire:navigate>
                         {{ __('Data Siswa') }}
