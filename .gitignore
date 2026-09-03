@@ -22,9 +22,12 @@ yarn-error.log
 /.vscode
 /.zed
 
-# OS Generated Files
+# OS & Office Generated Files
 .DS_Store
 Thumbs.db
+~$*
+~WRL*.tmp
+*.tmp
 
 # Local Database
 /database/*.sqlite

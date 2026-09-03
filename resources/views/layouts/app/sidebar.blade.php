@@ -19,43 +19,39 @@
                 </flux:sidebar.group>
                 @endunlessrole
 
-                @hasanyrole(['Super Admin', 'Admin Akademik'])
+                @hasanyrole(['Super Admin', 'Admin Akademik', 'Asatidz'])
                 <flux:sidebar.group :heading="__('Akademik')" class="grid">
+                    @hasanyrole(['Super Admin', 'Admin Akademik'])
                     <flux:sidebar.item icon="building-library" :href="route('academic.dashboard')" :current="request()->routeIs('academic.dashboard')" wire:navigate>
                         {{ __('Dashboard Akademik') }}
                     </flux:sidebar.item>
+                    @endhasanyrole
                     <flux:sidebar.item icon="users" :href="route('academic.students.index')" :current="request()->routeIs('academic.students.*')" wire:navigate>
                         {{ __('Data Siswa') }}
                     </flux:sidebar.item>
+                    @hasanyrole(['Super Admin', 'Admin Akademik'])
                     <flux:sidebar.item icon="building-office-2" :href="route('academic.classes.index')" :current="request()->routeIs('academic.classes.*')" wire:navigate>
                         {{ __('Manajemen Kelas') }}
                     </flux:sidebar.item>
                     <flux:sidebar.item icon="calendar-days" :href="route('academic.years.index')" :current="request()->routeIs('academic.years.*')" wire:navigate>
                         {{ __('Tahun Ajaran') }}
                     </flux:sidebar.item>
+                    @endhasanyrole
                 </flux:sidebar.group>
                 @endhasanyrole
 
-                @hasanyrole(['Super Admin', 'Admin Keuangan'])
+                @hasanyrole(['Super Admin', 'Admin Keuangan', 'Asatidz'])
                 <flux:sidebar.group :heading="__('Keuangan')" class="grid">
                     <flux:sidebar.item icon="chart-bar-square" :href="route('finance.hub')" :current="request()->routeIs('finance.hub')" wire:navigate>
                         {{ __('Laporan Keuangan') }}
                     </flux:sidebar.item>
+                    @hasanyrole(['Super Admin', 'Admin Keuangan'])
                     <flux:sidebar.item icon="banknotes" :href="route('finance.spp.index')" :current="request()->routeIs('finance.spp.*')" wire:navigate>
                         {{ __('Manajemen SPP') }}
                     </flux:sidebar.item>
                     <flux:sidebar.item icon="document-text" :href="route('finance.fee-types.index')" :current="request()->routeIs('finance.fee-types.index')" wire:navigate>
                         {{ __('Tagihan Lainnya') }}
                     </flux:sidebar.item>
-                    <!-- Reports and Audit commented out since we don't have separate pages for them yet or they were removed -->
-                    <!--
-                    <flux:sidebar.item icon="clipboard-document-list" :href="route('finance.hub', ['tab' => 'reports'])" :current="request()->routeIs('finance.hub') && request('tab') === 'reports'" wire:navigate>
-                        {{ __('Laporan Keuangan') }}
-                    </flux:sidebar.item>
-                    <flux:sidebar.item icon="shield-check" :href="route('finance.hub', ['tab' => 'audit'])" :current="request()->routeIs('finance.hub') && request('tab') === 'audit'" wire:navigate>
-                        {{ __('Log Audit') }}
-                    </flux:sidebar.item>
-                    -->
                     <flux:sidebar.item icon="banknotes" :href="route('finance.invoice.manual-payment')" :current="request()->routeIs('finance.invoice.manual-payment')" wire:navigate>
                         {{ __('Pembayaran Manual') }}
                     </flux:sidebar.item>
@@ -65,6 +61,7 @@
                     <flux:sidebar.item icon="chat-bubble-left-right" :href="route('finance.whatsapp-broadcast.general')" :current="request()->routeIs('finance.whatsapp-broadcast.general')" wire:navigate>
                         {{ __('Broadcast Pengumuman') }}
                     </flux:sidebar.item>
+                    @endhasanyrole
                 </flux:sidebar.group>
                 @endhasanyrole
 
@@ -127,11 +124,11 @@
 
                 <!-- User Profile Dropdown -->
                 <flux:dropdown position="bottom" align="end">
-                    <button class="flex items-center gap-2 bg-white border border-forest-light-sage/30 rounded-full px-4 py-1.5 hover:bg-forest-surface hover:border-forest-light-sage/50 transition duration-150 cursor-pointer">
+                    <flux:button class="flex items-center gap-2 bg-white border border-forest-light-sage/30 rounded-full px-4 py-1.5 hover:bg-forest-surface hover:border-forest-light-sage/50 transition duration-150 cursor-pointer">
                         <flux:avatar :name="auth()->user()->name" :initials="auth()->user()->initials()" size="xs" class="bg-forest-sage text-white" />
                         <span class="text-sm font-medium text-forest-text-main">{{ auth()->user()->name }}</span>
                         <flux:icon.chevron-down class="size-3 text-forest-text-muted" />
-                    </button>
+                    </flux:button>
                     <flux:menu class="min-w-48">
                         <flux:menu.item :href="route('profile.edit')" icon="cog" wire:navigate>
                             {{ __('Settings') }}

@@ -9,10 +9,12 @@
     <div class="space-y-4">
         <div class="flex justify-between items-center">
             <flux:heading size="xl">{{ __('Daftar Siswa') }}</flux:heading>
+            @hasanyrole(['Super Admin', 'Admin Akademik'])
             <div class="flex gap-2">
                 <flux:button :href="route('academic.import', ['type' => 'students'])" variant="subtle" icon="document-arrow-up" wire:navigate>{{ __('Import Excel') }}</flux:button>
                 <flux:button :href="route('academic.students.create')" variant="primary" icon="plus" wire:navigate>{{ __('Tambah') }}</flux:button>
             </div>
+            @endhasanyrole
         </div>
 
         <!-- Filters -->
@@ -56,8 +58,10 @@
                             <flux:table.cell>
                                 <div class="flex gap-2 justify-end">
                                     <flux:button variant="ghost" size="sm" icon="eye" :href="route('academic.students.show', $student->id)" wire:navigate />
+                                    @hasanyrole(['Super Admin', 'Admin Akademik'])
                                     <flux:button variant="ghost" size="sm" icon="pencil" :href="route('academic.students.edit', $student->id)" wire:navigate />
                                     <flux:button variant="ghost" size="sm" icon="trash" wire:click="deleteStudent({{ $student->id }})" wire:confirm="{{ __('Hapus data siswa ini?') }}" />
+                                    @endhasanyrole
                                 </div>
                             </flux:table.cell>
                         </flux:table.row>

@@ -11,6 +11,10 @@ class FinanceReportController extends Controller
 {
     public function exportPaymentsPdf()
     {
+        if (auth()->user()->hasRole('Asatidz')) {
+            abort(403, 'Akses cetak laporan keuangan tidak diizinkan untuk role Asatidz.');
+        }
+
         $payments = Payment::with(['invoice.student', 'invoice.feeType'])
             ->latest()
             ->limit(100) // Ambil 100 transaksi terbaru
@@ -30,6 +34,10 @@ class FinanceReportController extends Controller
 
     public function exportCashflowPdf(Request $request)
     {
+        if (auth()->user()->hasRole('Asatidz')) {
+            abort(403, 'Akses cetak laporan keuangan tidak diizinkan untuk role Asatidz.');
+        }
+
         $startDate = $request->query('start', now()->startOfMonth()->format('Y-m-d'));
         $endDate = $request->query('end', now()->endOfMonth()->format('Y-m-d'));
         $category = $request->query('category', 'all');

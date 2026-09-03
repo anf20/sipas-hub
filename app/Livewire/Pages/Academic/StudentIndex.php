@@ -32,6 +32,10 @@ class StudentIndex extends Component
 
     public function deleteStudent($id)
     {
+        if (auth()->user()->hasRole('Asatidz')) {
+            abort(403, 'Akses tidak diizinkan untuk role Asatidz.');
+        }
+
         $student = Student::findOrFail($id);
         $student->delete();
         session()->flash('status', __('Data siswa berhasil dihapus.'));

@@ -1,7 +1,16 @@
 <?php
 
-it('it redirects to login', function () {
+it('renders the executive summary landing page', function () {
     $response = $this->get('/');
 
-    $response->assertRedirect(route('login'));
+    $response->assertStatus(200);
+    $response->assertSee('SIPAS-Hub');
+    $response->assertSee('Executive Summary', false);
+});
+
+it('renders executive summary via direct route', function () {
+    $response = $this->get(route('executive.summary'));
+
+    $response->assertStatus(200);
+    $response->assertSee('Syahriyah');
 });

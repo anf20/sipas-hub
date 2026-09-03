@@ -25,17 +25,15 @@
                         <flux:input type="password" wire:model="password_confirmation" label="{{ __('Konfirmasi Password Baru') }}" />
                     </div>
 
-                    <flux:fieldset>
-                        <flux:legend>{{ __('Pilih Role') }}</flux:legend>
-                        <div class="grid grid-cols-2 gap-2">
+                    <flux:checkbox.group wire:model="selected_roles" label="{{ __('Pilih Role') }}">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mt-2">
                             @foreach($roles as $role)
-                                <flux:checkbox wire:model="selected_roles" :value="$role->name" :label="$role->name" />
+                                <flux:checkbox :value="$role->name" :label="$role->name" />
                             @endforeach
                         </div>
-                        <flux:error name="selected_roles" />
-                    </flux:fieldset>
+                    </flux:checkbox.group>
 
-                    <div class="flex items-center gap-4">
+                    <div class="flex items-center gap-4 pt-4">
                         <flux:button type="submit" variant="primary">{{ __('Perbarui Pengguna') }}</flux:button>
                         <flux:button :href="route('management.users.index')" variant="ghost" wire:navigate>{{ __('Batal') }}</flux:button>
                     </div>

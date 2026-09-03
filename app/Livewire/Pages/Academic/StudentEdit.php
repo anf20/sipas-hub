@@ -39,6 +39,10 @@ class StudentEdit extends Component
 
     public function mount(Student $student)
     {
+        if (auth()->user()->hasRole('Asatidz')) {
+            abort(403, 'Akses tidak diizinkan untuk role Asatidz.');
+        }
+
         $this->student = $student;
         $this->nis = $student->nis;
         $this->name = $student->name;

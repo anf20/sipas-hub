@@ -42,6 +42,10 @@ class StudentCreate extends Component
 
     public function mount()
     {
+        if (auth()->user()->hasRole('Asatidz')) {
+            abort(403, 'Akses tidak diizinkan untuk role Asatidz.');
+        }
+
         $this->entry_year = date('Y');
     }
 

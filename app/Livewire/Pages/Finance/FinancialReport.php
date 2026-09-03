@@ -5,6 +5,7 @@ namespace App\Livewire\Pages\Finance;
 use App\Models\Invoice;
 use App\Models\Payment;
 use App\Models\SchoolClass;
+use App\Models\Student;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use Livewire\Attributes\Computed;
@@ -63,6 +64,25 @@ class FinancialReport extends Component
 
     public $proofFileUrl = null;
 
+    // Filter & Sorting untuk Laporan Santri Menunggak
+    #[Url(history: true)]
+    public $debtSearch = '';
+
+    #[Url(history: true)]
+    public $debtSelectedClass = 'all';
+
+    #[Url(history: true)]
+    public $debtCategory = 'all'; // all, SPP, Non-SPP
+
+    #[Url(history: true)]
+    public $debtSortBy = 'highest'; // highest, lowest, name
+
+    public $showDebtDetailModal = false;
+
+    public $selectedStudentDebt = null;
+
+    public $selectedStudentInvoices = [];
+
     public function viewProof($paymentId)
     {
         $payment = Payment::find($paymentId);
@@ -70,6 +90,42 @@ class FinancialReport extends Component
             $this->proofFileUrl = asset('storage/'.$payment->proof_file);
             $this->showProofModal = true;
         }
+    }
+
+    public function viewStudentDebtDetail($studentId)
+    {
+        $student = Student::with(['schoolClass', 'parent'])->find($studentId);
+        if (! $student) {
+            return;
+        }
+
+        $invoicesQuery = Invoice::where('student_id', $studentId)
+            ->where('status', 'unpaid')
+            ->with('feeType')
+            ->orderBy('due_date', 'asc');
+
+        if ($this->debtCategory !== 'all') {
+            $invoicesQuery->whereHas('feeType', function ($q) {
+                if ($this->debtCategory === 'SPP') {
+                    $q->where('category', 'SPP');
+                } else {
+                    $q->where('category', '!=', 'SPP');
+                }
+            });
+        }
+
+        $this->selectedStudentDebt = $student;
+        $this->selectedStudentInvoices = $invoicesQuery->get();
+        $this->showDebtDetailModal = true;
+    }
+
+    public function resetDebtFilters()
+    {
+        $this->debtSearch = '';
+        $this->debtSelectedClass = 'all';
+        $this->debtCategory = 'all';
+        $this->debtSortBy = 'highest';
+        $this->resetPage('debtPage');
     }
 
     public function mount()
@@ -715,6 +771,10 @@ class FinancialReport extends Component
 
     public function exportPdf()
     {
+        if (auth()->user()->hasRole('Asatidz')) {
+            abort(403, 'Akses cetak laporan keuangan tidak diizinkan untuk role Asatidz.');
+        }
+
         return redirect()->route('finance.reports.financial.pdf', [
             'start' => $this->startDate,
             'end' => $this->endDate,
@@ -723,6 +783,131 @@ class FinancialReport extends Component
             'search' => $this->search,
             'class' => $this->selectedClass,
         ]);
+    }
+
+    #[Computed]
+    public function debtKpi()
+    {
+        $query = Invoice::where('status', 'unpaid');
+
+        if ($this->debtCategory !== 'all') {
+            $query->whereHas('feeType', function ($q) {
+                if ($this->debtCategory === 'SPP') {
+                    $q->where('category', 'SPP');
+                } else {
+                    $q->where('category', '!=', 'SPP');
+                }
+            });
+        }
+
+        if ($this->debtSelectedClass !== 'all') {
+            if (str_starts_with($this->debtSelectedClass, 'grade-')) {
+                $grade = str_replace('grade-', '', $this->debtSelectedClass);
+                $query->whereHas('student.schoolClass', function ($q) use ($grade) {
+                    $q->where('grade', $grade);
+                });
+            } elseif (str_starts_with($this->debtSelectedClass, 'class-')) {
+                $classId = str_replace('class-', '', $this->debtSelectedClass);
+                $query->whereHas('student', function ($q) use ($classId) {
+                    $q->where('school_class_id', $classId);
+                });
+            }
+        }
+
+        if (! empty($this->debtSearch)) {
+            $query->whereHas('student', function ($q) {
+                $q->where('name', 'like', '%'.$this->debtSearch.'%')
+                    ->orWhere('nis', 'like', '%'.$this->debtSearch.'%');
+            });
+        }
+
+        $totalTunggakanNominal = (float) (clone $query)->sum('amount');
+        $totalTunggakanInvoiceCount = (clone $query)->count();
+        $totalSantriMenunggakCount = (clone $query)->distinct('student_id')->count('student_id');
+
+        return [
+            'total_nominal' => $totalTunggakanNominal,
+            'total_invoices' => $totalTunggakanInvoiceCount,
+            'total_students' => $totalSantriMenunggakCount,
+        ];
+    }
+
+    #[Computed]
+    public function studentsWithDebt()
+    {
+        $query = Student::with(['schoolClass', 'parent'])
+            ->whereHas('invoices', function ($q) {
+                $q->where('status', 'unpaid');
+
+                if ($this->debtCategory !== 'all') {
+                    $q->whereHas('feeType', function ($sub) {
+                        if ($this->debtCategory === 'SPP') {
+                            $sub->where('category', 'SPP');
+                        } else {
+                            $sub->where('category', '!=', 'SPP');
+                        }
+                    });
+                }
+            })
+            ->withSum([
+                'invoices as total_unpaid_amount' => function ($q) {
+                    $q->where('status', 'unpaid');
+
+                    if ($this->debtCategory !== 'all') {
+                        $q->whereHas('feeType', function ($sub) {
+                            if ($this->debtCategory === 'SPP') {
+                                $sub->where('category', 'SPP');
+                            } else {
+                                $sub->where('category', '!=', 'SPP');
+                            }
+                        });
+                    }
+                },
+            ], 'amount')
+            ->withCount([
+                'invoices as unpaid_invoices_count' => function ($q) {
+                    $q->where('status', 'unpaid');
+
+                    if ($this->debtCategory !== 'all') {
+                        $q->whereHas('feeType', function ($sub) {
+                            if ($this->debtCategory === 'SPP') {
+                                $sub->where('category', 'SPP');
+                            } else {
+                                $sub->where('category', '!=', 'SPP');
+                            }
+                        });
+                    }
+                },
+            ]);
+
+        if ($this->debtSelectedClass !== 'all') {
+            if (str_starts_with($this->debtSelectedClass, 'grade-')) {
+                $grade = str_replace('grade-', '', $this->debtSelectedClass);
+                $query->whereHas('schoolClass', function ($q) use ($grade) {
+                    $q->where('grade', $grade);
+                });
+            } elseif (str_starts_with($this->debtSelectedClass, 'class-')) {
+                $classId = str_replace('class-', '', $this->debtSelectedClass);
+                $query->where('school_class_id', $classId);
+            }
+        }
+
+        if (! empty($this->debtSearch)) {
+            $query->where(function ($q) {
+                $q->where('name', 'like', '%'.$this->debtSearch.'%')
+                    ->orWhere('nis', 'like', '%'.$this->debtSearch.'%');
+            });
+        }
+
+        if ($this->debtSortBy === 'highest') {
+            $query->orderBy('total_unpaid_amount', 'desc');
+        } elseif ($this->debtSortBy === 'lowest') {
+            $query->orderBy('total_unpaid_amount', 'asc');
+        } else {
+            $query->orderBy('name', 'asc');
+        }
+
+        return $query->paginate(8, ['*'], 'debtPage');
     }
 
     public function render()

@@ -75,7 +75,6 @@ foreach ($routes as $name => $path) {
 
         // These routes are now redirects to Hubs or Login
         $redirectRoutes = [
-            'home',
             'dashboard',
         ];
 

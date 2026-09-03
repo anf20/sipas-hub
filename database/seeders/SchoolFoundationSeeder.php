@@ -34,7 +34,7 @@ class SchoolFoundationSeeder extends Seeder
             if (str_contains($name, 'Admin')) {
                 $user->assignRole('Admin Akademik');
             } else {
-                $user->assignRole('Admin Akademik'); // Default for homeroom
+                $user->assignRole('Asatidz'); // Default for teachers/asatidz
             }
 
             $staffUsers[] = $user;

@@ -22,6 +22,13 @@ class AcademicImport extends Component
     #[Url(as: 'type')]
     public $importType = 'students'; // 'students' or 'classes'
 
+    public function mount()
+    {
+        if (auth()->user()->hasRole('Asatidz')) {
+            abort(403, 'Akses tidak diizinkan untuk role Asatidz.');
+        }
+    }
+
     // For Student Import
     public $school_class_id;
 

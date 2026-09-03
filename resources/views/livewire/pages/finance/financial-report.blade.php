@@ -7,9 +7,11 @@
             <flux:breadcrumbs.item>{{ __('Laporan Keuangan') }}</flux:breadcrumbs.item>
         </flux:breadcrumbs>
 
+        @unlessrole('Asatidz')
         <div class="flex items-center gap-2">
             <flux:button variant="primary" icon="printer" wire:click="exportPdf">{{ __('Cetak PDF') }}</flux:button>
         </div>
+        @endunlessrole
     </flux:header>
 
 
@@ -454,6 +456,163 @@
 
         <hr class="border-zinc-200 dark:border-zinc-800 my-6" />
 
+        <!-- SEKSI: LAPORAN SANTRI MENUNGGAK -->
+        <div class="space-y-4">
+            <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <div>
+                    <div class="flex items-center gap-2">
+                        <flux:icon.exclamation-triangle class="w-5 h-5 text-amber-500" />
+                        <flux:heading size="lg" class="font-bold text-slate-800 dark:text-zinc-100">
+                            {{ __('Laporan Santri Menunggak') }}
+                        </flux:heading>
+                    </div>
+                    <flux:text size="sm" class="text-zinc-500">
+                        {{ __('Daftar seluruh santri yang memiliki tunggakan biaya (SPP & Non-SPP) yang belum lunas.') }}
+                    </flux:text>
+                </div>
+
+                <!-- Mini KPI Summary Pills -->
+                <div class="flex flex-wrap items-center gap-3">
+                    <div class="px-3.5 py-1.5 bg-rose-50 dark:bg-rose-950/30 border border-rose-200 dark:border-rose-800/50 rounded-xl flex items-center gap-2">
+                        <span class="text-2xs uppercase tracking-wider text-rose-600 dark:text-rose-400 font-semibold">{{ __('Total Tunggakan:') }}</span>
+                        <span class="font-mono text-sm font-bold text-rose-700 dark:text-rose-300">
+                            Rp {{ number_format($this->debtKpi['total_nominal'], 0, ',', '.') }}
+                        </span>
+                    </div>
+                    <div class="px-3.5 py-1.5 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800/50 rounded-xl flex items-center gap-2">
+                        <span class="text-2xs uppercase tracking-wider text-amber-600 dark:text-amber-400 font-semibold">{{ __('Santri:') }}</span>
+                        <span class="font-mono text-sm font-bold text-amber-700 dark:text-amber-300">
+                            {{ $this->debtKpi['total_students'] }} Anak ({{ $this->debtKpi['total_invoices'] }} Tagihan)
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Kontrol Filter & Sorting -->
+            <flux:card class="p-4 bg-zinc-50/50 dark:bg-zinc-800/10">
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+                    <div>
+                        <flux:input type="text" wire:model.live.debounce.400ms="debtSearch" placeholder="{{ __('Cari nama santri / NIS...') }}" icon="magnifying-glass" label="{{ __('Pencarian') }}" size="sm" clearable />
+                    </div>
+
+                    <div>
+                        <flux:select wire:model.live="debtSelectedClass" label="{{ __('Kelas / Tingkat') }}" size="sm">
+                            <flux:select.option value="all">{{ __('Semua Kelas & Tingkat') }}</flux:select.option>
+                            @foreach($this->classFilterOptions as $option)
+                                <flux:select.option value="{{ $option['value'] }}">
+                                    {{ $option['is_grade'] ? '━━ ' . $option['label'] . ' ━━' : '  ' . $option['label'] }}
+                                </flux:select.option>
+                            @endforeach
+                        </flux:select>
+                    </div>
+
+                    <div>
+                        <flux:select wire:model.live="debtCategory" label="{{ __('Kategori Tagihan') }}" size="sm">
+                            <flux:select.option value="all">{{ __('Semua Tagihan (SPP & Non-SPP)') }}</flux:select.option>
+                            <flux:select.option value="SPP">{{ __('Khusus SPP Bulanan') }}</flux:select.option>
+                            <flux:select.option value="Non-SPP">{{ __('Khusus Non-SPP (Seragam/Buku/dll)') }}</flux:select.option>
+                        </flux:select>
+                    </div>
+
+                    <div>
+                        <flux:select wire:model.live="debtSortBy" label="{{ __('Urutkan Berdasarkan') }}" size="sm">
+                            <flux:select.option value="highest">{{ __('Tunggakan Terbanyak (Rp ↓)') }}</flux:select.option>
+                            <flux:select.option value="lowest">{{ __('Tunggakan Tersedikit (Rp ↑)') }}</flux:select.option>
+                            <flux:select.option value="name">{{ __('Nama Santri (A - Z)') }}</flux:select.option>
+                        </flux:select>
+                    </div>
+                </div>
+            </flux:card>
+
+            <!-- Tabel Data Santri Menunggak -->
+            <flux:card class="p-0 overflow-hidden">
+                <div class="overflow-x-auto">
+                    <flux:table>
+                        <flux:table.columns>
+                            <flux:table.column>{{ __('NIS') }}</flux:table.column>
+                            <flux:table.column>{{ __('Nama Santri') }}</flux:table.column>
+                            <flux:table.column>{{ __('Kelas') }}</flux:table.column>
+                            <flux:table.column>{{ __('Wali Santri / Kontak') }}</flux:table.column>
+                            <flux:table.column align="center">{{ __('Jumlah Item') }}</flux:table.column>
+                            <flux:table.column align="end">{{ __('Total Tunggakan') }}</flux:table.column>
+                            <flux:table.column align="end">{{ __('Aksi') }}</flux:table.column>
+                        </flux:table.columns>
+                        <flux:table.rows>
+                            @forelse($this->studentsWithDebt as $student)
+                                <flux:table.row :key="'debt-student-'.$student->id" class="hover:bg-zinc-50/60 dark:hover:bg-zinc-800/30">
+                                    <flux:table.cell class="font-mono text-xs font-semibold text-zinc-500">
+                                        {{ $student->nis }}
+                                    </flux:table.cell>
+                                    <flux:table.cell>
+                                        <div class="font-bold text-slate-800 dark:text-zinc-100 text-sm">
+                                            {{ $student->name }}
+                                        </div>
+                                    </flux:table.cell>
+                                    <flux:table.cell>
+                                        <flux:badge size="sm" color="zinc" class="font-medium">
+                                            {{ $student->schoolClass->name ?? ('Kelas ' . $student->current_grade) }}
+                                        </flux:badge>
+                                    </flux:table.cell>
+                                    <flux:table.cell>
+                                        <div class="text-xs">
+                                            <div class="font-medium text-slate-700 dark:text-zinc-300">{{ $student->parent->name ?? '-' }}</div>
+                                            @if($student->parent && $student->parent->phone)
+                                                <div class="text-zinc-400 font-mono text-[11px] flex items-center gap-1 mt-0.5">
+                                                    <flux:icon.phone class="w-3 h-3 text-zinc-400" />
+                                                    <span>{{ $student->parent->phone }}</span>
+                                                </div>
+                                            @endif
+                                        </div>
+                                    </flux:table.cell>
+                                    <flux:table.cell align="center">
+                                        <flux:badge size="sm" color="amber" variant="outline" class="font-semibold">
+                                            {{ $student->unpaid_invoices_count }} Tagihan
+                                        </flux:badge>
+                                    </flux:table.cell>
+                                    <flux:table.cell align="end" class="font-mono font-bold text-rose-600 dark:text-rose-400 text-sm">
+                                        Rp {{ number_format($student->total_unpaid_amount, 0, ',', '.') }}
+                                    </flux:table.cell>
+                                    <flux:table.cell align="end">
+                                        <div class="flex items-center justify-end gap-1.5">
+                                            <flux:button size="xs" variant="subtle" icon="eye" wire:click="viewStudentDebtDetail({{ $student->id }})">
+                                                {{ __('Rincian') }}
+                                            </flux:button>
+                                            @if($student->parent && $student->parent->phone)
+                                                @php
+                                                    $cleanPhone = preg_replace('/[^0-9]/', '', $student->parent->phone);
+                                                    if (str_starts_with($cleanPhone, '0')) {
+                                                        $cleanPhone = '62' . substr($cleanPhone, 1);
+                                                    }
+                                                    $waMsg = rawurlencode("Assalamu'alaikum Wr. Wb. Bapak/Ibu Wali dari {$student->name} ({$student->nis}), kami menginfokan terdapat catatan tunggakan administrasi sebesar Rp " . number_format($student->total_unpaid_amount, 0, ',', '.') . " di sistem SIPAS-Hub. Mohon konfirmasi atau melakukan pelunasan. Terima kasih.");
+                                                @endphp
+                                                <flux:button as="a" href="https://wa.me/{{ $cleanPhone }}?text={{ $waMsg }}" target="_blank" size="xs" variant="ghost" icon="chat-bubble-left-ellipsis" class="text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50">
+                                                    {{ __('WA') }}
+                                                </flux:button>
+                                            @endif
+                                        </div>
+                                    </flux:table.cell>
+                                </flux:table.row>
+                            @empty
+                                <flux:table.row>
+                                    <flux:table.cell colspan="7" class="text-center py-10 text-zinc-400">
+                                        <flux:icon.check-circle class="w-10 h-10 mx-auto mb-2 text-emerald-500/60" />
+                                        <p class="font-semibold text-slate-700 dark:text-zinc-200">{{ __('Alhamdulillah, Tidak Ada Tunggakan!') }}</p>
+                                        <p class="text-xs text-zinc-400 mt-1">{{ __('Semua santri pada kriteria filter ini sudah melunasi seluruh kewajibannya.') }}</p>
+                                    </flux:table.cell>
+                                </flux:table.row>
+                            @endforelse
+                        </flux:table.rows>
+                    </flux:table>
+                </div>
+                <div class="p-4 border-t border-zinc-100 dark:border-zinc-800">
+                    {{ $this->studentsWithDebt->links() }}
+                </div>
+            </flux:card>
+        </div>
+
+        @unlessrole('Asatidz')
+        <hr class="border-zinc-200 dark:border-zinc-800 my-6" />
+
         <!-- CETAK LAPORAN KEUANGAN -->
         <div class="space-y-4">
             <div>
@@ -714,6 +873,7 @@
                 </div>
             </div>
         </div>
+        @endunlessrole
 
     <!-- Modal: View Proof Image -->
     <flux:modal wire:model="showProofModal" class="max-w-2xl">
@@ -745,6 +905,105 @@
                     <div></div>
                 @endif
                 <flux:button class="px-6" variant="primary" wire:click="$set('showProofModal', false)">{{ __('Tutup') }}</flux:button>
+            </div>
+        </div>
+    </flux:modal>
+
+    <!-- Modal: Rincian Tunggakan Santri -->
+    <flux:modal wire:model="showDebtDetailModal" class="max-w-3xl">
+        <div class="flex flex-col gap-6">
+            <div class="flex justify-between items-start border-b border-zinc-100 dark:border-zinc-800 pb-4">
+                <div>
+                    <flux:heading size="lg" class="font-bold text-slate-800 dark:text-zinc-100">
+                        {{ __('Rincian Tunggakan Santri') }}
+                    </flux:heading>
+                    @if($selectedStudentDebt)
+                        <flux:text size="sm" class="text-zinc-500 mt-0.5">
+                            {{ $selectedStudentDebt->name }} (NIS: {{ $selectedStudentDebt->nis }}) — {{ $selectedStudentDebt->schoolClass->name ?? '-' }}
+                        </flux:text>
+                    @endif
+                </div>
+                <flux:modal.close>
+                    <flux:icon.x-mark class="w-5 h-5 text-zinc-400 hover:text-zinc-600 cursor-pointer" />
+                </flux:modal.close>
+            </div>
+
+            @if($selectedStudentDebt)
+                <!-- Ringkasan Profil & Wali -->
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 bg-zinc-50 dark:bg-zinc-900/60 p-4 rounded-xl border border-zinc-100 dark:border-zinc-800 text-xs">
+                    <div>
+                        <span class="text-zinc-400 block">{{ __('Wali Santri:') }}</span>
+                        <span class="font-semibold text-slate-800 dark:text-zinc-200">{{ $selectedStudentDebt->parent->name ?? '-' }}</span>
+                    </div>
+                    <div>
+                        <span class="text-zinc-400 block">{{ __('No. WhatsApp:') }}</span>
+                        <span class="font-mono font-semibold text-slate-800 dark:text-zinc-200">{{ $selectedStudentDebt->parent->phone ?? '-' }}</span>
+                    </div>
+                    <div>
+                        <span class="text-zinc-400 block">{{ __('Total Kewajiban Belum Dibayar:') }}</span>
+                        <span class="font-mono font-bold text-rose-600 dark:text-rose-400 text-sm">
+                            Rp {{ number_format(collect($selectedStudentInvoices)->sum('amount'), 0, ',', '.') }}
+                        </span>
+                    </div>
+                </div>
+
+                <!-- Tabel Item Tagihan Belum Dibayar -->
+                <div class="overflow-x-auto border border-zinc-200 dark:border-zinc-800 rounded-xl">
+                    <table class="w-full text-xs text-left">
+                        <thead class="bg-zinc-50 dark:bg-zinc-900 text-zinc-500 border-b border-zinc-200 dark:border-zinc-800 font-semibold">
+                            <tr>
+                                <th class="p-3">#</th>
+                                <th class="p-3">{{ __('Nama Tagihan / Periode') }}</th>
+                                <th class="p-3">{{ __('Kategori') }}</th>
+                                <th class="p-3">{{ __('Jatuh Tempo') }}</th>
+                                <th class="p-3 text-right">{{ __('Nominal Tagihan') }}</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-zinc-100 dark:divide-zinc-800">
+                            @forelse($selectedStudentInvoices as $idx => $inv)
+                                <tr class="hover:bg-zinc-50/50 dark:hover:bg-zinc-800/30">
+                                    <td class="p-3 text-zinc-400">{{ $idx + 1 }}</td>
+                                    <td class="p-3 font-semibold text-slate-800 dark:text-zinc-200">
+                                        {{ $inv->billing_detail }}
+                                    </td>
+                                    <td class="p-3">
+                                        <flux:badge size="sm" :color="$inv->feeType?->category === 'SPP' ? 'indigo' : 'purple'">
+                                            {{ $inv->feeType?->category ?? 'Lainnya' }}
+                                        </flux:badge>
+                                    </td>
+                                    <td class="p-3 font-mono text-zinc-500">
+                                        {{ $inv->due_date ? \Carbon\Carbon::parse($inv->due_date)->format('d/m/Y') : '-' }}
+                                    </td>
+                                    <td class="p-3 text-right font-mono font-bold text-rose-600 dark:text-rose-400">
+                                        Rp {{ number_format($inv->amount, 0, ',', '.') }}
+                                    </td>
+                                </tr>
+                            @empty
+                                <tr>
+                                    <td colspan="5" class="p-6 text-center text-zinc-400">
+                                        {{ __('Tidak ada rincian tagihan.') }}
+                                    </td>
+                                </tr>
+                            @endforelse
+                        </tbody>
+                        @if(count($selectedStudentInvoices) > 0)
+                            <tfoot class="bg-zinc-50 dark:bg-zinc-900 border-t border-zinc-200 dark:border-zinc-800 font-bold">
+                                <tr>
+                                    <td colspan="4" class="p-3 text-right text-slate-700 dark:text-zinc-300">{{ __('Total Tunggakan:') }}</td>
+                                    <td class="p-3 text-right font-mono text-rose-600 dark:text-rose-400 text-sm">
+                                        Rp {{ number_format(collect($selectedStudentInvoices)->sum('amount'), 0, ',', '.') }}
+                                    </td>
+                                </tr>
+                            </tfoot>
+                        @endif
+                    </table>
+                </div>
+            @endif
+
+            <div class="flex justify-end pt-2">
+                <flux:button variant="primary" wire:click="$set('showDebtDetailModal', false)">
+                    {{ __('Tutup') }}
+                </flux:button>
             </div>
         </div>
     </flux:modal>

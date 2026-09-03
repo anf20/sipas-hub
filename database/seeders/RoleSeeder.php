@@ -16,6 +16,7 @@ class RoleSeeder extends Seeder
             'Super Admin',
             'Admin Keuangan',
             'Admin Akademik',
+            'Asatidz',
             'Orang Tua',
         ];
 
